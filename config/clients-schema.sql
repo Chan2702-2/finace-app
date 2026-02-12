@@ -3,10 +3,24 @@
 -- Add this to your Supabase schema
 -- ============================================
 
+-- Enable UUID extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================
+-- FUNCTION FOR UPDATED_AT TRIGGER
+-- ============================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ============================================
 -- CLIENTS TABLE
 -- ============================================
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
@@ -24,15 +38,21 @@ CREATE TABLE clients (
 -- ============================================
 -- INDEXES
 -- ============================================
-CREATE INDEX idx_clients_user_id ON clients(user_id);
-CREATE INDEX idx_clients_name ON clients(name);
+CREATE INDEX IF NOT EXISTS idx_clients_user_id ON clients(user_id);
+CREATE INDEX IF NOT EXISTS idx_clients_name ON clients(name);
 
 -- ============================================
 -- ROW LEVEL SECURITY POLICIES
 -- ============================================
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 
--- Clients: Users can CRUD their own clients
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own clients" ON clients;
+DROP POLICY IF EXISTS "Users can insert own clients" ON clients;
+DROP POLICY IF EXISTS "Users can update own clients" ON clients;
+DROP POLICY IF EXISTS "Users can delete own clients" ON clients;
+
+-- Create policies
 CREATE POLICY "Users can view own clients" ON clients
     FOR SELECT USING (auth.uid() = user_id);
 
@@ -48,30 +68,11 @@ CREATE POLICY "Users can delete own clients" ON clients
 -- ============================================
 -- TRIGGER FOR UPDATED_AT
 -- ============================================
-CREATE TRIGGER update_clients_updated_at BEFORE UPDATE ON clients
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- ============================================
--- FUNCTION TO GET PKS DURATION
--- ============================================
-CREATE OR REPLACE FUNCTION get_pks_duration_months(start_date DATE, end_date DATE)
-RETURNS INTEGER AS $$
-BEGIN
-    IF start_date IS NULL OR end_date IS NULL THEN
-        RETURN NULL;
-    END IF;
-    RETURN EXTRACT(YEAR FROM end_date) * 12 + EXTRACT(MONTH FROM end_date) 
-           - EXTRACT(YEAR FROM start_date) * 12 - EXTRACT(MONTH FROM start_date)
-           + 1;
-END;
-$$ LANGUAGE plpgsql;
-
--- ============================================
--- UPDATE INVOICES TABLE TO REFERENCE CLIENTS
--- Add client_id foreign key to invoices
--- ============================================
--- First, add the column (if not exists)
--- ALTER TABLE invoices ADD COLUMN IF NOT EXISTS client_id UUID REFERENCES clients(id) ON DELETE SET NULL;
+DROP TRIGGER IF EXISTS update_clients_updated_at ON clients;
+CREATE TRIGGER update_clients_updated_at 
+    BEFORE UPDATE ON clients
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
 -- VERIFICATION

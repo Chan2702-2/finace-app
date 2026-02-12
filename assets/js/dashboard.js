@@ -198,20 +198,19 @@ const Dashboard = (function() {
             }
             
             // Get invoice counts
-            const { data: invoiceCounts } = await invoiceQuery;
-            
-            // Get pending invoice count
-            const { data: pendingInvoices } = await pendingQuery;
+            const invoiceResult = await invoiceQuery;
+            const pendingResult = await pendingQuery;
             
             // Calculate totals
             const totalIncome = incomeData?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
             const totalExpense = expenseData?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
-            const pendingCount = pendingInvoices?.length || 0;
+            const pendingCount = pendingResult.count || 0;
+            const totalInvoiceCount = invoiceResult.count || 0;
             
             // Update UI
             document.getElementById('total-income').textContent = App.formatCurrency(totalIncome);
             document.getElementById('total-expense').textContent = App.formatCurrency(totalExpense);
-            document.getElementById('total-invoices').textContent = invoiceCounts?.length || 0;
+            document.getElementById('total-invoices').textContent = totalInvoiceCount;
             document.getElementById('pending-invoices').textContent = pendingCount;
             
             // Calculate balance
