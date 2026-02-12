@@ -174,6 +174,70 @@ const notifications = {
     }
 };
 
+/**
+ * User helpers - Ensure user record exists
+ */
+const userHelpers = {
+    /**
+     * Ensure user record exists in users table
+     * Call this before inserting data to any table with user_id FK
+     */
+    ensureUserExists: async () => {
+        try {
+            const { data: { session } } = await getSupabase().auth.getSession();
+            if (!session || !session.user) {
+                console.error('No session found');
+                return { error: 'No session found' };
+            }
+            
+            const userId = session.user.id;
+            const userEmail = session.user.email;
+            const userName = session.user.user_metadata?.full_name || userEmail;
+            
+            // Check if user exists in users table
+            const { data: existingUser, error: checkError } = await getSupabase()
+                .from('users')
+                .select('id')
+                .eq('id', userId)
+                .single();
+            
+            if (checkError && checkError.code !== 'PGRST116') {
+                console.error('Error checking user:', checkError);
+                return { error: checkError };
+            }
+            
+            // If user doesn't exist, create it
+            if (!existingUser) {
+                console.log('Creating user record in users table...');
+                const { data: newUser, error: insertError } = await getSupabase()
+                    .from('users')
+                    .insert({
+                        id: userId,
+                        email: userEmail,
+                        full_name: userName,
+                        role: 'user'
+                    })
+                    .select()
+                    .single();
+                
+                if (insertError) {
+                    console.error('Error creating user:', insertError);
+                    return { error: insertError };
+                }
+                
+                console.log('User record created:', newUser);
+                return { success: true, user: newUser };
+            }
+            
+            console.log('User already exists:', existingUser);
+            return { success: true, user: existingUser };
+        } catch (error) {
+            console.error('Error in ensureUserExists:', error);
+            return { error };
+        }
+    }
+};
+
 // Export for use in other modules
 window.supabaseConfig = {
     initSupabase,
@@ -182,6 +246,7 @@ window.supabaseConfig = {
     db,
     realtime,
     notifications,
+    userHelpers,
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 };

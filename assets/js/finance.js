@@ -288,6 +288,12 @@ const Finance = (function() {
         App.showLoading('Menyimpan transaksi...');
         
         try {
+            // Ensure user record exists in users table
+            const userCheck = await window.supabaseConfig.userHelpers.ensureUserExists();
+            if (userCheck && userCheck.error) {
+                console.warn('User check warning:', userCheck.error);
+            }
+            
             let result;
             
             if (id) {

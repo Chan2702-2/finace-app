@@ -408,6 +408,12 @@ const Invoice = (function() {
         App.showLoading('Menyimpan invoice...');
         
         try {
+            // Ensure user record exists in users table
+            const userCheck = await window.supabaseConfig.userHelpers.ensureUserExists();
+            if (userCheck && userCheck.error) {
+                console.warn('User check warning:', userCheck.error);
+            }
+            
             let result;
             
             if (editingInvoiceId) {
@@ -598,6 +604,12 @@ const Invoice = (function() {
                 .eq('id', id);
             
             if (invoiceError) throw invoiceError;
+            
+            // Ensure user record exists in users table
+            const userCheck = await window.supabaseConfig.userHelpers.ensureUserExists();
+            if (userCheck && userCheck.error) {
+                console.warn('User check warning:', userCheck.error);
+            }
             
             // Create transaction for the payment
             const { error: transactionError } = await window.supabaseConfig.db

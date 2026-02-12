@@ -119,3 +119,50 @@ Atau lewat Dashboard:
 ---
 
 Kalo masih ada masalah,cek console browser error message-nya apa dan google error itu bro.
+
+## ERROR: Foreign Key Constraint pada Tabel Reconcile/Invoice/Transaction
+
+**Error:** `insert or update on table "reconciliations" violates foreign key constraint "reconciliations_user_id_fkey"`
+
+**Penyebab:** Tabel `users` ga otomatis terisi waktu user signup di Supabase Auth.
+
+**Solusi:**
+
+1. Buka **Supabase Dashboard** > **SQL Editor**
+2. Copy dan jalankan SQL dari [`config/triggers.sql`](finance-system/config/triggers.sql):
+
+```sql
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $
+BEGIN
+    INSERT INTO public.users (id, email, full_name, role)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+        'user'
+    );
+    RETURN NEW;
+END;
+$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+```
+
+3. **Untuk user yang sudah terdaftar tapi belum ada di tabel users**, jalankan:
+
+```sql
+INSERT INTO public.users (id, email, full_name, role)
+SELECT 
+    au.id,
+    au.email,
+    COALESCE(au.raw_user_meta_data->>'full_name', au.email),
+    'user'
+FROM auth.users au
+LEFT JOIN public.users u ON au.id = u.id
+WHERE u.id IS NULL;
+```
+
+4. **Redeploy atau refresh aplikasi** biar perubahan keapply
