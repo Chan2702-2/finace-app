@@ -1,157 +1,121 @@
-# Cara Deploy ke Vercel & Setup Supabase
+# Deployment Guide - Vercel + Supabase
 
-## 📦 Step 1: Setup Supabase
+## Masalah Umum: "Gabisa Konek ke Vercel"
 
-### 1.1 Buat Akun Supabase
-1. Buka [supabase.com](https://supabase.com)
-2. Klik "Start your project" atau "Sign Up"
-3. Daftar dengan GitHub, Google, atau email
-4. Verifikasi email jika diperlukan
+Jika lo gabisa konek Supabase ke Vercel, biasanya karena:
 
-### 1.2 Buat Project Baru
-1. Setelah login, klik "New Project"
-2. Pilih organization (biasanya account personal)
-3. Isi detail project:
-   - **Name**: finance-system (atau nama lain)
-   - **Database Password**: Simpan password ini!
-   - **Region**: Southeast Asia (Singapore) - terdekat dari Indonesia
-4. Klik "Create new project"
-5. Tunggu beberapa menit hingga project siap
+### 1. Environment Variables Belum Disetting
 
-### 1.3 Setup Database Schema
-1. Di dashboard Supabase, klik **SQL Editor** di sidebar kiri
-2. Klik **New query**
-3. Copy isi file `config/schema.sql`
-4. Paste ke editor
-5. Klik **Run** (atau Ctrl+Enter)
-6. Jika berhasil, akan ada notifikasi "Success. No rows returned"
+**Langkah-langkah di Vercel:**
 
-### 1.4 Get API Credentials
-1. Di dashboard Supabase, klik **Settings** (gear icon) di sidebar kiri
-2. Klik **API**
-3. Copy nilai berikut:
-   - **Project URL**: https://xxxxx.supabase.co
-   - **anon public key**: Starts with eyJ...
-4. Edit file `config/supabase.js` dan ganti:
-```javascript
-const SUPABASE_URL = 'https://your-project-id.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key-here';
-```
+1. Buka [Vercel Dashboard](https://vercel.com/dashboard)
+2. Pilih project lo
+3. Klik **Settings** > **Environment Variables**
+4. Tambahin dua variabel ini:
+   - `SUPABASE_URL` = URL dari Supabase (bukan URL browser, tapi dari Settings > API)
+   - `SUPABASE_ANON_KEY` = Anon Key dari Supabase (Settings > API)
 
-### 1.5 Verifikasi Database Tables
-1. Di dashboard Supabase, klik **Table Editor** di sidebar
-2. Anda harus melihat tabel-tabel ini:
-   - users
-   - invoices
-   - transactions
-   - reconciliations
-   - notifications
-   - logs
+**Cara dapat credentials dari Supabase:**
+1. Buka [Supabase Dashboard](https://supabase.com/dashboard)
+2. Pilih project lo
+3. Klik **Settings** (ikon gear) > **API**
+4. Copy:
+   - **Project URL** → `SUPABASE_URL`
+   - **anon public** → `SUPABASE_ANON_KEY`
 
----
+### 2. CORS Issues
 
-## 🚀 Step 2: Deploy ke Vercel
+Supabase defaultnya cuma bolehin akses dari domain tertentu. 
 
-### 2.1 Push ke GitHub
-1. Buat repository baru di GitHub:
-   - Buka [github.com](https://github.com)
-   - Klik "+" > "New repository"
-   - Nama: finance-system
-   - Visibility: Public atau Private
-   - Klik "Create repository"
+**Tambahin domain Vercel lo di Supabase:**
 
-2. Push project ke GitHub:
+1. Supabase Dashboard > **Settings** > **API**
+2. Scroll ke **URL Configuration** > **Redirect URLs**
+3. Tambahin:
+   - `https://your-project-name.vercel.app`
+   - `http://localhost:3000` (untuk local development)
+
+### 3. Local Development dengan Environment Variables
+
+Buat file `.env.local` di root project:
+
 ```bash
-cd finance-system
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/finance-system.git
-git push -u origin main
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-### 2.2 Connect ke Vercel
-1. Buka [vercel.com](https://vercel.com)
-2. Klik "Sign Up" / "Log In"
-3. Login dengan GitHub
-4. Klik "Add New..." > "Project"
-5. Pilih repository "finance-system" dari list
-6. Klik "Import"
+Terus restart dev server lo.
 
-### 2.3 Configure Vercel
-1. **Framework Preset**: Leave as "Other" / "Vite" (tidak penting untuk static files)
-2. **Root Directory**: Leave as "."
-3. **Build Command**: Kosongkan
-4. **Output Directory**: Leave as "."
-5. Klik **Deploy**
+### 4. Verifikasi Koneksi
 
-### 2.4 Tunggu Deploy Selesai
-1. Vercel akan build dan deploy project
-2. URL akan terlihat seperti: https://finance-system.vercel.app
-3. Klik URL untuk test aplikasi
+Buka browser dev tools (F12) > Console. Kalo ada error kayak:
 
----
+- `Failed to fetch` →cek URL dan internet
+- `AuthApiError: invalid API key` →cek ANON_KEY
+- `CORS error` →tambahin Redirect URL di Supabase
 
-## 🔧 Step 3: Konfigurasi Tambahan
+### 5. Cara Deploy ke Vercel (Step by Step)
 
-### 3.1 Enable Email Auth (Optional)
-1. Di Supabase Dashboard > Authentication > Providers
-2. Pastikan "Email" enabled
-3. (Optional) Enable "Confirm email" jika ingin user verifikasi email
+```bash
+# 1. Install Vercel CLI
+npm i -g vercel
 
-### 3.2 Environment Variables di Vercel (Optional)
-Jika menggunakan environment variables:
-1. Di Vercel Dashboard > Project > Settings > Environment Variables
-2. Add variable:
-   - KEY: SUPABASE_URL
-   - VALUE: https://your-project.supabase.co
-3. Add variable:
-   - KEY: SUPABASE_ANON_KEY  
-   - VALUE: your-anon-key
-4. Redeploy project
+# 2. Login ke Vercel
+vercel login
 
----
+# 3. Deploy
+cd finance-system
+vercel
 
-## 🧪 Step 4: Testing
+# 4. Ikuti instruksi di CLI:
+# - Set up and deploy? Yes
+# - Which scope? Pilih akun lo
+# - Link to existing project? No
+# - Project name? finance-system (atau nama lain)
+# - Directory? ./
+# - Want to modify settings? Yes
+# - Build Command? (kosongin aja)
+# - Output Directory? ./
+# - Override settings? No
+```
 
-### Test Login
-1. Buka URL Vercel Anda
-2. Klik "Daftar" di halaman login
-3. Isi email & password
-4. Jika "Email not confirmed", cek email dan klik link verifikasi
+### 6. Setelah Deploy, Setting Environment Variables di Vercel
 
-### Test CRUD Operations
-1. Buat invoice baru
-2. Catat transaksi keuangan
-3. Tambah data rekonsiliasi
-4. Generate laporan
+```bash
+# Tambahin environment variables
+vercel env add SUPABASE_URL
+vercel env add SUPABASE_ANON_KEY
 
----
+# Deploy lagi biar keapply
+vercel --prod
+```
 
-## ❗ Troubleshooting
+Atau lewat Dashboard:
+1. Vercel Dashboard > Project > Settings > Environment Variables
+2. Tambahin variabel satu per satu
+3. Redeploy project
 
-### "Failed to fetch" Error
-- Pastikan Supabase URL & anon key benar di `config/supabase.js`
-- Cek RLS policies di Supabase
+### 7. Troubleshooting
 
-### Page tidak load di Vercel
-- Pastikan semua path di HTML menggunakan relative path (tanpa `/` di awal)
-- Vercel menggunakan SPA routing, tapi project ini menggunakan static HTML
+**Error:** `TypeError: Cannot read property 'auth' of undefined`
 
-### Database error
-- Cek apakah schema.sql sudah di-run
-- Cek apakah tables sudah dibuat di Table Editor
+**Solusi:** Supabase client belom kebaca. Cek:
+- Apakah `<script src="config/supabase.js"></script>` ada sebelum script lain
+- Apakah `window.supabaseConfig` udah terdefinisi
 
-### Realtime tidak bekerja
-- Pastikan Supabase Realtime enabled di Replication settings
-- Cek browser console untuk error
+**Error:** `NetworkError` 
+
+**Solusi:** 
+- Cek URL Supabase bener apa nggak
+- Coba akses URL Supabase di browser langsung (`https://your-project.supabase.co`)
+- Kalo gabisa diakses, berarti project Supabase lo bermasalah
+
+### 8. Catatan Penting
+
+- **JANGAN** push credentials ke GitHub!
+- Pakai `.env.example` sebagai template, tapi `.env.local` jangan di-commit
+- Environment variables di Vercel harus disetting manual lewat Dashboard atau CLI
 
 ---
 
-## 📞 Support
-
-Jika ada pertanyaan atau masalah:
-1. Cek dokumentasi Supabase: https://supabase.com/docs
-2. Cek dokumentasi Vercel: https://vercel.com/docs
-3. Atau hubungi developer
+Kalo masih ada masalah,cek console browser error message-nya apa dan google error itu bro.

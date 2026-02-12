@@ -1,12 +1,16 @@
 /**
  * Supabase Configuration
  * 
- * IMPORTANT: Replace these values with your actual Supabase credentials
+ * IMPORTANT: For Vercel deployment, set these as Environment Variables:
+ * - SUPABASE_URL
+ * - SUPABASE_ANON_KEY
+ * 
  * Get these from your Supabase Dashboard: Settings > API
  */
 
-const SUPABASE_URL = 'https://nrhzjfdybfleetakqbsy.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yaHpqZmR5YmZsZWV0YWtxYnN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4ODUwMTcsImV4cCI6MjA4NjQ2MTAxN30.SvVNbaA6r3h3t2b63Tx0iwEMmffbuxdXUhhgbBb-HgA';
+// Get from environment variables or use fallback for local development
+const SUPABASE_URL = window.ENV_SUPABASE_URL || 'https://nrhzjfdybfleetakqbsy.supabase.co';
+const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yaHpqZmR5YmZsZWV0YWtxYnN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4ODUwMTcsImV4cCI6MjA4NjQ2MTAxN30.SvVNbaA6r3h3t2b63Tx0iwEMmffbuxdXUhhgbBb-HgA';
 
 /**
  * Initialize Supabase Client

@@ -98,6 +98,22 @@
         </p>
     </div>
     
+    <!-- Vercel Environment Variables Injection -->
+    <script>
+        // Expose environment variables to window for Supabase config
+        window.ENV_SUPABASE_URL = "https://nrhzjfdybfleetakqbsy.supabase.co";
+        window.ENV_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yaHpqZmR5YmZsZWV0YWtxYnN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4ODUwMTcsImV4cCI6MjA4NjQ2MTAxN30.SvVNbaA6r3h3t2b63Tx0iwEMmffbuxdXUhhgbBb-HgA";
+        
+        // Override with Vercel environment variables if available
+        if (typeof process !== 'undefined' && process.env) {
+            if (process.env.SUPABASE_URL) {
+                window.ENV_SUPABASE_URL = process.env.SUPABASE_URL;
+            }
+            if (process.env.SUPABASE_ANON_KEY) {
+                window.ENV_SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+            }
+        }
+    </script>
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
     <!-- Config -->
