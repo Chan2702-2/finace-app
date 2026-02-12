@@ -67,7 +67,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
-                        <span>Klien</span>
+                        <span>Mitra</span>
                     </a>
                 </div>
             </nav>
@@ -174,7 +174,6 @@
                         <label class="filter-label">Status:</label>
                         <select class="filter-select" id="status-filter">
                             <option value="all">Semua Status</option>
-                            <option value="pending">Menunggu</option>
                             <option value="matched">Cocok</option>
                             <option value="unmatched">Tidak Cocok</option>
                         </select>
@@ -286,24 +285,19 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Jumlah Bayar (Rp)</label>
-                            <input type="number" class="form-input" id="payment-amount" min="0">
-                        </div>
-                        <div class="form-group">
                             <label class="form-label">Selisih</label>
-                            <input type="text" class="form-input" id="difference" value="Rp 0" readonly style="background: #F9FAFB;">
+                            <input type="number" class="form-input" id="difference" min="0" value="0">
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Status</label>
                             <select class="form-select" id="recon-status">
-                                <option value="pending">Menunggu</option>
                                 <option value="matched">Cocok</option>
                                 <option value="unmatched">Tidak Cocok</option>
                             </select>
                         </div>
+                    </div>
+                    
+                    <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Keterangan</label>
                             <input type="text" class="form-input" id="recon-notes">
@@ -315,6 +309,26 @@
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- View Recon Modal -->
+    <div class="modal-overlay" id="view-recon-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Detail Rekonsiliasi</h3>
+                <button class="modal-close" id="close-view-recon-modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="view-recon-content">
+                <!-- Content will be populated dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="close-view-recon-btn">Tutup</button>
+            </div>
         </div>
     </div>
     

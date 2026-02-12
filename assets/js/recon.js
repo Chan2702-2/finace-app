@@ -30,7 +30,9 @@ const Recon = (function() {
             addReconBtn: document.getElementById('add-recon-btn'),
             searchInput: document.getElementById('search-recon'),
             statusFilter: document.getElementById('status-filter'),
-            pagination: document.getElementById('recon-pagination')
+            pagination: document.getElementById('recon-pagination'),
+            viewReconModal: document.getElementById('view-recon-modal'),
+            viewReconContent: document.getElementById('view-recon-content')
         };
     }
     
@@ -47,6 +49,17 @@ const Recon = (function() {
         const closeModalBtn = document.getElementById('close-recon-modal');
         if (closeModalBtn) {
             closeModalBtn.addEventListener('click', closeReconModal);
+        }
+        
+        // Close view modal
+        const closeViewModalBtn = document.getElementById('close-view-recon-modal');
+        if (closeViewModalBtn) {
+            closeViewModalBtn.addEventListener('click', closeViewReconModal);
+        }
+        
+        const closeViewReconBtn = document.getElementById('close-view-recon-btn');
+        if (closeViewReconBtn) {
+            closeViewReconBtn.addEventListener('click', closeViewReconModal);
         }
         
         // Form submission
@@ -113,7 +126,7 @@ const Recon = (function() {
         if (paginatedData.length === 0) {
             elements.reconTableBody.innerHTML = `
                 <tr>
-                    <td colspan="10" style="text-align: center; padding: 40px;">
+                    <td colspan="11" style="text-align: center; padding: 40px;">
                         <div class="empty-state">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#9CA3AF" style="margin-bottom: 16px;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -145,14 +158,22 @@ const Recon = (function() {
                 </td>
                 <td>
                     <div class="table-actions">
-                        <button class="btn btn-sm btn-outline" onclick="Recon.editRecon('${recon.id}')">
+                        ${recon.status !== 'matched' ? `
+                            <button class="btn btn-sm btn-outline" onclick="Recon.editRecon('${recon.id}')" title="Edit">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="Recon.markAsMatched('${recon.id}')" title="Centang (Tandai Cocok)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-outline" onclick="Recon.viewRecon('${recon.id}')" title="Lihat Detail">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="Recon.deleteRecon('${recon.id}')">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                         </button>
                     </div>
@@ -235,8 +256,7 @@ const Recon = (function() {
             document.getElementById('payment-date').value = recon.payment_date || '';
             document.getElementById('payment-location').value = recon.payment_location || '';
             document.getElementById('recon-notes').value = recon.notes || '';
-            document.getElementById('recon-status').value = recon.status || 'pending';
-            calculateDifference();
+            document.getElementById('recon-status').value = recon.status || 'unmatched';
         } else {
             document.getElementById('recon-id').value = '';
         }
@@ -252,18 +272,85 @@ const Recon = (function() {
     }
     
     /**
+     * Open view recon modal
+     */
+    function viewRecon(id) {
+        const recon = reconciliations.find(r => r.id === id);
+        if (!recon) return;
+        
+        const totalBill = recon.total_bill || 0;
+        const difference = recon.difference || 0;
+        
+        elements.viewReconContent.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="detail-item">
+                    <label>No Mitra Switching</label>
+                    <span>${recon.partner_code || '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tanggal Recon</label>
+                    <span>${App.formatDate(recon.recon_date)}</span>
+                </div>
+                <div class="detail-item">
+                    <label>PDAM</label>
+                    <span>${recon.pdam_code || '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>No Sambungan</label>
+                    <span>${recon.connection_number || '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Nama Pelanggan</label>
+                    <span>${recon.customer_name}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Rekening</label>
+                    <span>${recon.account_number || '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Total Tagihan (Rp)</label>
+                    <span>${App.formatCurrency(totalBill)}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tanggal Bayar</label>
+                    <span>${recon.payment_date ? App.formatDate(recon.payment_date) : '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Lokasi Bayar</label>
+                    <span>${recon.payment_location || '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <label>Selisih</label>
+                    <span style="color: ${difference !== 0 ? '#EF4444' : '#10B981'}; font-weight: 600;">
+                        ${App.formatCurrency(difference)}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <span class="badge badge-${getStatusColor(recon.status)}">${getStatusText(recon.status)}</span>
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1;">
+                    <label>Keterangan</label>
+                    <span>${recon.notes || '-'}</span>
+                </div>
+            </div>
+        `;
+        
+        elements.viewReconModal.classList.add('active');
+    }
+    
+    /**
+     * Close view recon modal
+     */
+    function closeViewReconModal() {
+        elements.viewReconModal.classList.remove('active');
+    }
+    
+    /**
      * Calculate difference
      */
     function calculateDifference() {
-        const totalBill = parseFloat(document.getElementById('total-bill').value) || 0;
-        const paymentAmount = parseFloat(document.getElementById('payment-amount')?.value) || 0;
-        const difference = paymentAmount - totalBill;
-        
-        const diffEl = document.getElementById('difference');
-        if (diffEl) {
-            diffEl.value = App.formatCurrency(difference);
-            diffEl.style.color = difference !== 0 ? '#EF4444' : '#10B981';
-        }
+        // Difference is now manually entered, no auto-calculation needed
     }
     
     /**
@@ -276,9 +363,6 @@ const Recon = (function() {
         if (!user) return;
         
         const id = document.getElementById('recon-id').value;
-        const totalBill = parseFloat(document.getElementById('total-bill').value) || 0;
-        const paymentAmount = parseFloat(document.getElementById('payment-amount')?.value) || 0;
-        const difference = paymentAmount - totalBill;
         
         const reconData = {
             user_id: user.id,
@@ -287,13 +371,13 @@ const Recon = (function() {
             pdam_code: document.getElementById('pdam-code').value,
             connection_number: document.getElementById('connection-number').value,
             customer_name: document.getElementById('customer-name').value,
-            total_bill: totalBill,
+            total_bill: parseFloat(document.getElementById('total-bill').value) || 0,
             account_number: document.getElementById('account-number').value,
             payment_date: document.getElementById('payment-date').value || null,
             payment_location: document.getElementById('payment-location').value,
             notes: document.getElementById('recon-notes').value,
             status: document.getElementById('recon-status').value,
-            difference: difference
+            difference: parseFloat(document.getElementById('difference').value) || 0
         };
         
         App.showLoading('Menyimpan data...');
@@ -320,20 +404,6 @@ const Recon = (function() {
             
             if (result.error) throw result.error;
             
-            // Check for mismatch
-            if (difference !== 0) {
-                App.showToast('warning', 'Selisih Terdeteksi', `Perhatian: Ada selisih sebesar ${App.formatCurrency(difference)}`);
-                
-                // Create notification
-                await window.supabaseConfig.notifications.create({
-                    user_id: user.id,
-                    type: 'recon_mismatch',
-                    title: '⚠ Rekonsiliasi tidak cocok',
-                    message: `PDAM: ${reconData.pdam_code}\nPelanggan: ${reconData.customer_name}\nSelisih: ${App.formatCurrency(difference)}`,
-                    data: JSON.stringify(reconData)
-                });
-            }
-            
             App.showToast('success', 'Berhasil', 'Data rekonsiliasi berhasil disimpan');
             closeReconModal();
             loadReconciliations();
@@ -356,25 +426,29 @@ const Recon = (function() {
     }
     
     /**
-     * Delete reconciliation
+     * Mark reconciliation as matched (centang)
      */
-    async function deleteRecon(id) {
-        if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+    async function markAsMatched(id) {
+        const recon = reconciliations.find(r => r.id === id);
+        if (!recon) return;
+        
+        const user = App.getUser();
+        if (!user) return;
         
         try {
             const { error } = await window.supabaseConfig.db
                 .from('reconciliations')
-                .delete()
+                .update({ status: 'matched' })
                 .eq('id', id);
             
             if (error) throw error;
             
-            App.showToast('success', 'Berhasil', 'Data berhasil dihapus');
+            App.showToast('success', 'Berhasil', 'Rekonsiliasi ditandai cocok');
             loadReconciliations();
             
         } catch (error) {
-            console.error('Error deleting reconciliation:', error);
-            App.showToast('error', 'Error', 'Gagal menghapus data');
+            console.error('Error marking as matched:', error);
+            App.showToast('error', 'Error', 'Gagal menandai cocok: ' + error.message);
         }
     }
     
@@ -411,7 +485,7 @@ const Recon = (function() {
      * Get status color
      */
     function getStatusColor(status) {
-        const colors = { pending: 'warning', matched: 'success', unmatched: 'danger' };
+        const colors = { matched: 'success', unmatched: 'danger' };
         return colors[status] || 'secondary';
     }
     
@@ -419,7 +493,7 @@ const Recon = (function() {
      * Get status text
      */
     function getStatusText(status) {
-        const texts = { pending: 'Menunggu', matched: 'Cocok', unmatched: 'Tidak Cocok' };
+        const texts = { matched: 'Cocok', unmatched: 'Tidak Cocok' };
         return texts[status] || status;
     }
     
@@ -442,7 +516,8 @@ const Recon = (function() {
     return {
         init,
         editRecon,
-        deleteRecon,
-        goToPage
+        goToPage,
+        viewRecon,
+        markAsMatched
     };
 })();
