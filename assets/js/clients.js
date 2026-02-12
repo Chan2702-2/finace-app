@@ -141,7 +141,7 @@ const Clients = (function() {
             elements.clientsList.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align: center; padding: 40px 16px; color: #6B7280;">
-                        ${filteredClients ? 'Tidak ada klien yang cocok' : 'Belum ada klien. Klik "Tambah Klien" untuk menambahkan.'}
+                        ${filteredClients ? 'Tidak ada mitra yang cocok' : 'Belum ada mitra. Klik "Tambah Mitra" untuk menambahkan.'}
                     </td>
                 </tr>
             `;
@@ -219,7 +219,7 @@ const Clients = (function() {
     function openClientModal(client = null) {
         editingClientId = client?.id || null;
         
-        document.getElementById('modal-title').textContent = client ? 'Edit Klien' : 'Tambah Klien';
+        document.getElementById('modal-title').textContent = client ? 'Edit Mitra' : 'Tambah Mitra';
         
         document.getElementById('client-id').value = client?.id || '';
         document.getElementById('client-name').value = client?.name || '';
@@ -253,7 +253,7 @@ const Clients = (function() {
         const detailsHtml = `
             <div style="display: grid; gap: 16px;">
                 <div>
-                    <label style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase;">Nama Klien</label>
+                    <label style="font-size: 0.75rem; color: #6B7280; text-transform: uppercase;">Nama Mitra</label>
                     <div style="font-weight: 600; color: #111827; margin-top: 4px;">${escapeHtml(client.name)}</div>
                 </div>
                 
@@ -356,13 +356,13 @@ const Clients = (function() {
             
             if (error) throw error;
             
-            App.showToast('success', 'Berhasil', 'Klien berhasil dihapus');
+            App.showToast('success', 'Berhasil', 'Mitra berhasil dihapus');
             closeDeleteModal();
             await loadClients();
             
         } catch (error) {
             console.error('Error deleting client:', error);
-            App.showToast('error', 'Error', 'Gagal menghapus klien: ' + error.message);
+            App.showToast('error', 'Error', 'Gagal menghapus mitra: ' + error.message);
         }
     }
     
@@ -387,7 +387,7 @@ const Clients = (function() {
             notes: document.getElementById('client-notes').value.trim() || null
         };
         
-        App.showLoading('Menyimpan klien...');
+        App.showLoading('Menyimpan mitra...');
         
         try {
             let result;
@@ -399,24 +399,27 @@ const Clients = (function() {
                     .update(clientData)
                     .eq('id', editingClientId);
                 
-                App.showToast('success', 'Berhasil', 'Klien berhasil diperbarui');
+                App.showToast('success', 'Berhasil', 'Mitra berhasil diperbarui');
             } else {
                 // Create new client
                 result = await window.supabaseConfig.db
                     .from('clients')
                     .insert(clientData);
                 
-                App.showToast('success', 'Berhasil', 'Klien berhasil dibuat');
+                App.showToast('success', 'Berhasil', 'Mitra berhasil dibuat');
             }
             
             if (result.error) throw result.error;
             
+            App.hideLoading();
+            App.showToast('success', 'Berhasil', editingClientId ? 'Mitra berhasil diperbarui' : 'Mitra berhasil dibuat');
             closeClientModal();
             await loadClients();
             
         } catch (error) {
+            App.hideLoading();
             console.error('Error saving client:', error);
-            App.showToast('error', 'Error', 'Gagal menyimpan klien: ' + error.message);
+            App.showToast('error', 'Error', 'Gagal menyimpan mitra: ' + error.message);
         }
     }
     
