@@ -5,8 +5,8 @@
  * Get these from your Supabase Dashboard: Settings > API
  */
 
-const SUPABASE_URL = 'https://your-project-id.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key-here';
+const SUPABASE_URL = 'https://nrhzjfdybfleetakqbsy.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yaHpqZmR5YmZsZWV0YWtxYnN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4ODUwMTcsImV4cCI6MjA4NjQ2MTAxN30.SvVNbaA6r3h3t2b63Tx0iwEMmffbuxdXUhhgbBb-HgA';
 
 /**
  * Initialize Supabase Client
