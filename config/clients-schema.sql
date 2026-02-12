@@ -15,8 +15,7 @@ CREATE TABLE clients (
     email TEXT,
     npwp TEXT,
     pks_number TEXT,
-    pks_start_date DATE,
-    pks_end_date DATE,
+    pks_duration INTEGER,
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())

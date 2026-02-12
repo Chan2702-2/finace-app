@@ -53,7 +53,7 @@ const Invoice = (function() {
         const clientSelect = document.getElementById('client-select');
         if (!clientSelect) return;
         
-        clientSelect.innerHTML = '<option value="">-- Pilih Klien --</option>';
+        clientSelect.innerHTML = '<option value="">-- Pilih Mitra --</option>';
         clients.forEach(client => {
             const option = document.createElement('option');
             option.value = client.id;
@@ -67,7 +67,7 @@ const Invoice = (function() {
      */
     function selectClient(clientId) {
         if (!clientId) {
-            // Clear client fields if "-- Pilih Klien --" is selected
+            // Clear client fields if "-- Pilih Mitra --" is selected
             document.getElementById('client-name').value = '';
             document.getElementById('client-tax').value = '';
             document.getElementById('client-email').value = '';

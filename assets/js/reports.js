@@ -370,7 +370,7 @@ const Reports = (function() {
             <thead>
                 <tr>
                     <th>No. Invoice</th>
-                    <th>Klien</th>
+                    <th>Mitra</th>
                     <th>Tanggal</th>
                     <th>Jatuh Tempo</th>
                     <th style="text-align: right;">Total</th>
@@ -485,7 +485,7 @@ const Reports = (function() {
                     ['LAPORAN INVOICE'],
                     [`Periode: ${dateFrom} s/d ${dateTo}`],
                     [''],
-                    ['No. Invoice', 'Klien', 'Tanggal', 'Jatuh Tempo', 'Total', 'Status'],
+                    ['No. Invoice', 'Mitra', 'Tanggal', 'Jatuh Tempo', 'Total', 'Status'],
                     ...data.map(inv => [
                         inv.invoice_number,
                         inv.client_name,
@@ -561,7 +561,7 @@ const Reports = (function() {
                 ]);
                 break;
             case 'invoice':
-                headers = ['No. Invoice', 'Klien', 'Total', 'Status'];
+                headers = ['No. Invoice', 'Mitra', 'Total', 'Status'];
                 rows = data.map(inv => [
                     inv.invoice_number,
                     inv.client_name,

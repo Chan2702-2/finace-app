@@ -16,13 +16,25 @@ const Clients = (function() {
      */
     async function init() {
         console.log('Initializing Clients...');
+        
+        // Debug: Check if supabaseConfig exists
+        if (!window.supabaseConfig) {
+            console.error('Supabase config not loaded!');
+            document.getElementById('clients-list').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #EF4444;">Error: Supabase config tidak terbaca. Refresh halaman.</td></tr>';
+            return;
+        }
+        
         cacheElements();
         setupEventListeners();
         
         // Ensure user record exists
-        const userCheck = await window.supabaseConfig.userHelpers.ensureUserExists();
-        if (userCheck && userCheck.error) {
-            console.warn('User check warning:', userCheck.error);
+        try {
+            const userCheck = await window.supabaseConfig.userHelpers.ensureUserExists();
+            if (userCheck && userCheck.error) {
+                console.warn('User check warning:', userCheck.error);
+            }
+        } catch (e) {
+            console.warn('User check error:', e);
         }
         
         await loadClients();
