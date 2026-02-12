@@ -25,10 +25,16 @@ const Auth = (function() {
             emailInput: document.getElementById('email'),
             passwordInput: document.getElementById('password'),
             confirmPasswordInput: document.getElementById('confirm-password'),
+            fullNameInput: document.getElementById('full-name'),
+            signupEmailInput: document.getElementById('signup-email'),
+            signupPasswordInput: document.getElementById('signup-password'),
             loginBtn: document.getElementById('login-btn'),
             signupBtn: document.getElementById('signup-btn'),
             showPasswordBtn: document.getElementById('show-password-btn'),
-            toggleAuthModeBtn: document.getElementById('toggle-auth-mode'),
+            toggleAuthLink: document.getElementById('toggle-auth-link'),
+            authTitle: document.getElementById('auth-title'),
+            authSubtitle: document.getElementById('auth-subtitle'),
+            toggleAuthText: document.getElementById('toggle-auth-text'),
             loginError: document.getElementById('login-error'),
             signupError: document.getElementById('signup-error')
         };
@@ -79,8 +85,11 @@ const Auth = (function() {
         }
         
         // Toggle between login and signup
-        if (elements.toggleAuthModeBtn) {
-            elements.toggleAuthModeBtn.addEventListener('click', toggleAuthMode);
+        if (elements.toggleAuthLink) {
+            elements.toggleAuthLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleAuthMode();
+            });
         }
         
         // Check if already logged in
@@ -150,8 +159,9 @@ const Auth = (function() {
     async function handleSignup(e) {
         e.preventDefault();
         
-        const email = elements.emailInput.value.trim();
-        const password = elements.passwordInput.value;
+        const fullName = elements.fullNameInput ? elements.fullNameInput.value.trim() : '';
+        const email = elements.signupEmailInput ? elements.signupEmailInput.value.trim() : elements.emailInput.value.trim();
+        const password = elements.signupPasswordInput ? elements.signupPasswordInput.value : elements.passwordInput.value;
         const confirmPassword = elements.confirmPasswordInput.value;
         
         // Clear previous errors
@@ -189,7 +199,15 @@ const Auth = (function() {
         `;
         
         try {
-            const { data, error } = await window.supabaseConfig.auth.signUp(email, password);
+            const { data, error } = await window.supabaseConfig.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: fullName
+                    }
+                }
+            });
             
             if (error) {
                 throw error;
@@ -227,31 +245,25 @@ const Auth = (function() {
     function toggleAuthMode() {
         const loginForm = document.getElementById('login-form');
         const signupForm = document.getElementById('signup-form');
-        const authTitle = document.getElementById('auth-title');
-        const authSubtitle = document.getElementById('auth-subtitle');
-        const toggleText = document.getElementById('toggle-auth-text');
-        const toggleLink = document.getElementById('toggle-auth-link');
         
         if (loginForm && signupForm) {
             if (loginForm.style.display !== 'none') {
                 loginForm.style.display = 'none';
                 signupForm.style.display = 'block';
-                if (authTitle) authTitle.textContent = 'Buat Akun';
-                if (authSubtitle) authSubtitle.textContent = 'Daftar untuk mulai menggunakan sistem';
-                if (toggleText) toggleText.textContent = 'Sudah punya akun?';
-                if (toggleLink) {
-                    toggleLink.textContent = 'Masuk';
-                    toggleLink.onclick = () => window.location.reload();
+                if (elements.authTitle) elements.authTitle.textContent = 'Buat Akun';
+                if (elements.authSubtitle) elements.authSubtitle.textContent = 'Daftar untuk mulai menggunakan sistem';
+                if (elements.toggleAuthText) elements.toggleAuthText.textContent = 'Sudah punya akun?';
+                if (elements.toggleAuthLink) {
+                    elements.toggleAuthLink.textContent = 'Masuk';
                 }
             } else {
                 loginForm.style.display = 'block';
                 signupForm.style.display = 'none';
-                if (authTitle) authTitle.textContent = 'Masuk';
-                if (authSubtitle) authSubtitle.textContent = 'Masuk ke dashboard keuangan Anda';
-                if (toggleText) toggleText.textContent = 'Belum punya akun?';
-                if (toggleLink) {
-                    toggleLink.textContent = 'Daftar';
-                    toggleLink.onclick = toggleAuthMode;
+                if (elements.authTitle) elements.authTitle.textContent = 'Masuk';
+                if (elements.authSubtitle) elements.authSubtitle.textContent = 'Masuk ke dashboard keuangan Anda';
+                if (elements.toggleAuthText) elements.toggleAuthText.textContent = 'Belum punya akun?';
+                if (elements.toggleAuthLink) {
+                    elements.toggleAuthLink.textContent = 'Daftar';
                 }
             }
         }

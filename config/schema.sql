@@ -231,41 +231,15 @@ $$ LANGUAGE plpgsql;
 
 -- ============================================
 -- REALTIME SUBSCRIPTIONS
--- Enable realtime for tables
--- Note: Run this separately in Supabase Dashboard > Database > Replication
--- Or use: ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+ Enable realtime for tables
+ Note: Run this separately in Supabase Dashboard > Database > Replication
+ Or use: ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
 -- ============================================
--- Uncomment the following lines if you want to enable realtime programmatically:
--- ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
--- ALTER PUBLICATION supabase_realtime ADD TABLE invoices;
--- ALTER PUBLICATION supabase_realtime ADD TABLE reconciliations;
+ Uncomment the following lines if you want to enable realtime programmatically:
+ ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+ ALTER PUBLICATION supabase_realtime ADD TABLE invoices;
+ ALTER PUBLICATION supabase_realtime ADD TABLE reconciliations;
 
 -- ============================================
--- DUMMY DATA (Optional - for testing)
--- Note: Run this AFTER creating a user in auth.users first!
+-- END OF SCHEMA.SQL
 -- ============================================
-
--- First, insert a test user (replace with actual user ID from auth.users)
--- To get user ID: Select * from auth.users;
--- Example:
--- INSERT INTO users (id, email, full_name, role) 
--- VALUES ('your-actual-uuid-here', 'test@example.com', 'Test User', 'user');
-
--- Then insert sample data using that user ID:
-/*
-INSERT INTO invoices (user_id, invoice_number, client_name, client_email, items, subtotal, total, status, due_date) VALUES
-('your-uuid-here', 'INV-20240201-0001', 'PT Maju Bersama', 'info@majubersama.com', '[{"description": "Konsultasi Bisnis", "quantity": 10, "unit_price": 150000, "total": 1500000}, {"description": "Implementasi Sistem", "quantity": 1, "unit_price": 5000000, "total": 5000000}]', 6500000, 6500000, 'pending', '2024-03-01'),
-('your-uuid-here', 'INV-20240201-0002', 'CV Sejahtera', 'admin@sejahtera.com', '[{"description": "Maintenance Bulanan", "quantity": 1, "unit_price": 2000000, "total": 2000000}]', 2000000, 2000000, 'sent', '2024-02-28'),
-('your-uuid-here', 'INV-20240201-0003', 'PT Nusa Raya', 'finance@nusaraya.com', '[{"description": "Pengembangan Software", "quantity": 80, "unit_price": 125000, "total": 10000000}]', 10000000, 10000000, 'paid', '2024-01-15');
-
-INSERT INTO transactions (user_id, type, amount, category, description, transaction_date) VALUES
-('your-uuid-here', 'income', 15000000, 'Pendapatan Invoice', 'Pembayaran INV-20240201-0003', '2024-02-01'),
-('your-uuid-here', 'expense', 2500000, 'Operasional', 'Sewa kantor Februari', '2024-02-05'),
-('your-uuid-here', 'expense', 500000, 'Utilities', 'Listrik dan air', '2024-02-10'),
-('your-uuid-here', 'income', 5000000, 'Pendapatan Lain', 'Konsultasi mandiri', '2024-02-15');
-
-INSERT INTO reconciliations (user_id, partner_code, recon_date, pdam_code, connection_number, customer_name, total_bill, account_number, payment_date, payment_location, status, difference) VALUES
-('your-uuid-here', 'PDAM-001', '2024-02-01', 'PDAM-KOTA', '1234567890', 'Ahmad Susanto', 150000, 'REK-001', '2024-02-03', 'Kantor Pusat', 'matched', 0),
-('your-uuid-here', 'PDAM-002', '2024-02-02', 'PDAM-KAB', '0987654321', 'Siti Rahayu', 250000, 'REK-002', '2024-02-05', 'Bank Transfer', 'unmatched', 50000),
-('your-uuid-here', 'PDAM-003', '2024-02-03', 'PDAM-DESA', '1122334455', 'Budi Santoso', 100000, 'REK-003', NULL, NULL, 'pending', 100000);
-*/
