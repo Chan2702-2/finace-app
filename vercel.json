@@ -1,7 +1,7 @@
 {
   "env": {
-    "SUPABASE_URL": "@supabase-url",
-    "SUPABASE_ANON_KEY": "@supabase-anon-key"
+    "SUPABASE_URL": "https://nrhzjfdybfleetakqbsy.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5yaHpqZmR5YmZsZWV0YWtxYnN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4ODUwMTcsImV4cCI6MjA4NjQ2MTAxN30.SvVNbaA6r3h3t2b63Tx0iwEMmffbuxdXUhhgbBb-HgA"
   },
   "buildCommand": "npm run build",
   "outputDirectory": "."
