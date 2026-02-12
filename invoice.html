@@ -222,6 +222,12 @@
                     
                     <div class="form-row">
                         <div class="form-group">
+                            <label class="form-label">Pilih Klien</label>
+                            <select class="form-input" id="client-select" onchange="Invoice.selectClient(this.value)">
+                                <option value="">-- Pilih Klien --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">No. Invoice</label>
                             <input type="text" class="form-input" id="invoice-number" required>
                         </div>
@@ -237,8 +243,8 @@
                             <input type="text" class="form-input" id="client-name" placeholder="PT/Nama Client" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Email Klien</label>
-                            <input type="email" class="form-input" id="client-email" placeholder="email@client.com">
+                            <label class="form-label">No. Pajak</label>
+                            <input type="text" class="form-input" id="client-tax" placeholder="NPWP">
                         </div>
                     </div>
                     

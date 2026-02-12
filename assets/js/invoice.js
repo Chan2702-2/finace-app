@@ -6,6 +6,7 @@
 const Invoice = (function() {
     // State
     let invoices = [];
+    let clients = [];
     let currentPage = 1;
     let itemsPerPage = 10;
     let editingInvoiceId = null;
@@ -13,11 +14,74 @@ const Invoice = (function() {
     /**
      * Initialize invoice module
      */
-    function init() {
+    async function init() {
         console.log('Initializing Invoice module...');
         cacheElements();
         setupEventListeners();
+        await loadClients();
         loadInvoices();
+    }
+    
+    /**
+     * Load clients for dropdown
+     */
+    async function loadClients() {
+        const user = App.getUser();
+        if (!user) return;
+        
+        try {
+            const { data, error } = await window.supabaseConfig.db
+                .from('clients')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('name', { ascending: true });
+            
+            if (error) throw error;
+            
+            clients = data || [];
+            populateClientDropdown();
+            
+        } catch (error) {
+            console.error('Error loading clients:', error);
+        }
+    }
+    
+    /**
+     * Populate client dropdown
+     */
+    function populateClientDropdown() {
+        const clientSelect = document.getElementById('client-select');
+        if (!clientSelect) return;
+        
+        clientSelect.innerHTML = '<option value="">-- Pilih Klien --</option>';
+        clients.forEach(client => {
+            const option = document.createElement('option');
+            option.value = client.id;
+            option.textContent = client.name;
+            clientSelect.appendChild(option);
+        });
+    }
+    
+    /**
+     * Select client and auto-fill form
+     */
+    function selectClient(clientId) {
+        if (!clientId) {
+            // Clear client fields if "-- Pilih Klien --" is selected
+            document.getElementById('client-name').value = '';
+            document.getElementById('client-tax').value = '';
+            document.getElementById('client-email').value = '';
+            document.getElementById('client-address').value = '';
+            return;
+        }
+        
+        const client = clients.find(c => c.id === clientId);
+        if (client) {
+            document.getElementById('client-name').value = client.name || '';
+            document.getElementById('client-tax').value = client.npwp || '';
+            document.getElementById('client-email').value = client.email || '';
+            document.getElementById('client-address').value = client.address || '';
+        }
     }
     
     /**
@@ -728,6 +792,7 @@ const Invoice = (function() {
         deleteInvoice,
         addInvoiceItem,
         removeInvoiceItem,
-        goToPage
+        goToPage,
+        selectClient
     };
 })();
