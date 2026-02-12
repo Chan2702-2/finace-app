@@ -41,10 +41,11 @@ function getSupabase() {
  * Auth helper functions
  */
 const auth = {
-    signUp: (email, password) => {
+    signUp: (email, password, options = {}) => {
         return getSupabase().auth.signUp({
             email,
-            password
+            password,
+            options
         });
     },
     
