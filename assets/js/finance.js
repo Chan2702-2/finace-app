@@ -28,6 +28,7 @@ const Finance = (function() {
             transactionModal: document.getElementById('transaction-modal'),
             transactionForm: document.getElementById('transaction-form'),
             addTransactionBtn: document.getElementById('add-transaction-btn'),
+            downloadReportBtn: document.getElementById('download-report-btn'),
             searchInput: document.getElementById('search-transaction'),
             typeFilter: document.getElementById('type-filter'),
             pagination: document.getElementById('transaction-pagination'),
@@ -44,6 +45,11 @@ const Finance = (function() {
         // Add transaction button
         if (elements.addTransactionBtn) {
             elements.addTransactionBtn.addEventListener('click', () => openTransactionModal());
+        }
+        
+        // Download report button
+        if (elements.downloadReportBtn) {
+            elements.downloadReportBtn.addEventListener('click', downloadReport);
         }
         
         // Close modal
@@ -370,6 +376,82 @@ const Finance = (function() {
     }
     
     /**
+     * Download report as Excel
+     */
+    function downloadReport() {
+        if (transactions.length === 0) {
+            App.showToast('error', 'Peringatan', 'Tidak ada data transaksi untuk diunduh');
+            return;
+        }
+        
+        try {
+            // Prepare data for Excel
+            const wb = XLSX.utils.book_new();
+            
+            // Summary sheet
+            const income = transactions
+                .filter(tx => tx.type === 'income')
+                .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+            
+            const expense = transactions
+                .filter(tx => tx.type === 'expense')
+                .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+            
+            const balance = income - expense;
+            
+            const summaryData = [
+                ['LAPORAN KEUANGAN'],
+                ['Tanggal Unduh: ' + new Date().toLocaleDateString('id-ID')],
+                [''],
+                ['RINGKASAN'],
+                ['Total Pemasukan', App.formatCurrency(income)],
+                ['Total Pengeluaran', App.formatCurrency(expense)],
+                ['Saldo', App.formatCurrency(balance)],
+                [''],
+                ['DETAIL TRANSAKSI'],
+                ['No', 'Tanggal', 'Jenis', 'Kategori', 'Keterangan', 'Jumlah']
+            ];
+            
+            // Add transaction data
+            let no = 1;
+            transactions.forEach(tx => {
+                summaryData.push([
+                    no++,
+                    App.formatDate(tx.transaction_date),
+                    tx.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+                    tx.category || '-',
+                    tx.description || '-',
+                    tx.type === 'income' ? tx.amount : -tx.amount
+                ]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(summaryData);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 5 },  // No
+                { wch: 15 }, // Tanggal
+                { wch: 12 }, // Jenis
+                { wch: 20 }, // Kategori
+                { wch: 30 }, // Keterangan
+                { wch: 15 }  // Jumlah
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Laporan Keuangan');
+            
+            // Generate and download file
+            const fileName = 'Laporan_Keuangan_' + new Date().toISOString().split('T')[0] + '.xlsx';
+            XLSX.writeFile(wb, fileName);
+            
+            App.showToast('success', 'Berhasil', 'Laporan berhasil diunduh');
+            
+        } catch (error) {
+            console.error('Error downloading report:', error);
+            App.showToast('error', 'Error', 'Gagal mengunduh laporan: ' + error.message);
+        }
+    }
+    
+    /**
      * Go to page
      */
     function goToPage(page) {
@@ -402,6 +484,7 @@ const Finance = (function() {
         init,
         editTransaction,
         deleteTransaction,
-        goToPage
+        goToPage,
+        downloadReport
     };
 })();
