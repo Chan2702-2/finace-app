@@ -1,0 +1,435 @@
+/**
+ * PDF Print Styles
+ * A4 Portrait Layout - Ready for Print/PDF Export
+ * All measurements in mm for precision
+ */
+
+/* Page setup */
+@page {
+    size: A4 portrait;
+    margin: 0;
+}
+
+/* Reset for print */
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+/* Base styles */
+.invoice-pdf {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 15mm;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 10pt;
+    line-height: 1.4;
+    color: #1F2937;
+    position: relative;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Decorative background shapes */
+.bg-shape {
+    position: absolute;
+    width: 300mm;
+    height: 300mm;
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+.bg-shape-1 {
+    top: -100mm;
+    right: -100mm;
+    background: radial-gradient(circle, #4F46E5 0%, transparent 70%);
+}
+
+.bg-shape-2 {
+    bottom: -100mm;
+    left: -100mm;
+    background: radial-gradient(circle, #10B981 0%, transparent 70%);
+}
+
+/* Header section */
+.pdf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12mm;
+    padding-bottom: 8mm;
+    border-bottom: 2px solid #4F46E5;
+    position: relative;
+}
+
+.company-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 6mm;
+}
+
+.company-logo {
+    width: 20mm;
+    height: 20mm;
+    object-fit: contain;
+}
+
+.company-details {
+    text-align: left;
+}
+
+.company-name {
+    font-size: 16pt;
+    font-weight: 700;
+    color: #4F46E5;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.company-tagline {
+    font-size: 8pt;
+    color: #6B7280;
+    margin: 1mm 0 0;
+}
+
+.invoice-title-block {
+    text-align: right;
+}
+
+.invoice-title {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #4F46E5;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+.invoice-number {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #1F2937;
+    margin-top: 2mm;
+}
+
+/* Invoice meta section */
+.invoice-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10mm;
+}
+
+.meta-left {
+    width: 55%;
+}
+
+.meta-right {
+    width: 40%;
+    text-align: right;
+}
+
+.meta-section {
+    margin-bottom: 6mm;
+}
+
+.meta-label {
+    font-size: 8pt;
+    color: #6B7280;
+    margin: 0 0 1mm;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.meta-value {
+    font-size: 9pt;
+    color: #1F2937;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.meta-value.strong {
+    font-weight: 600;
+    font-size: 11pt;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4mm;
+    margin-bottom: 2mm;
+}
+
+.meta-row .meta-label {
+    margin: 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 1mm 3mm;
+    border-radius: 2mm;
+    font-size: 8pt;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+/* Items table */
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8mm;
+    page-break-inside: avoid;
+}
+
+.items-table thead tr {
+    background: #4F46E5;
+    color: #fff;
+}
+
+.items-table th {
+    padding: 3mm 2mm;
+    font-size: 9pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.items-table td {
+    padding: 3mm 2mm;
+    border-bottom: 0.5px solid #E5E7EB;
+    font-size: 9pt;
+    vertical-align: top;
+}
+
+.items-table tbody tr:hover {
+    background: #F9FAFB;
+}
+
+.items-table .item-row {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* Text alignments */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Totals section */
+.totals-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10mm;
+    page-break-inside: avoid;
+}
+
+.totals-left {
+    width: 45%;
+}
+
+.totals-right {
+    width: 45%;
+}
+
+.say-box {
+    background: #F3F4F6;
+    border: 1px solid #E5E7EB;
+    border-radius: 2mm;
+    padding: 4mm;
+    margin-bottom: 4mm;
+}
+
+.say-label {
+    font-size: 8pt;
+    color: #6B7280;
+    margin: 0 0 2mm;
+    text-transform: uppercase;
+}
+
+.say-text {
+    font-size: 9pt;
+    font-style: italic;
+    color: #1F2937;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.bank-box {
+    background: #ECFDF5;
+    border: 1px solid #10B981;
+    border-radius: 2mm;
+    padding: 4mm;
+}
+
+.bank-label {
+    font-size: 8pt;
+    color: #059669;
+    margin: 0 0 2mm;
+    text-transform: uppercase;
+}
+
+.bank-text {
+    font-size: 9pt;
+    color: #1F2937;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 2mm 0;
+    border-bottom: 0.5px solid #E5E7EB;
+}
+
+.total-row.grand-total {
+    background: #4F46E5;
+    color: #fff;
+    padding: 3mm 4mm;
+    margin-top: 2mm;
+    border-radius: 2mm;
+    border: none;
+}
+
+.total-label {
+    font-size: 9pt;
+    color: #4B5563;
+}
+
+.grand-total .total-label {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #fff;
+}
+
+.total-value {
+    font-size: 9pt;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.grand-total .total-value {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Signature section */
+.signature-section {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12mm;
+    page-break-inside: avoid;
+}
+
+.signature-box {
+    width: 40%;
+}
+
+.signature-box.text-right {
+    text-align: right;
+}
+
+.signature-label {
+    font-size: 9pt;
+    color: #6B7280;
+    margin: 0 0 15mm;
+}
+
+.signature-space {
+    height: 20mm;
+    border-bottom: 1px solid #1F2937;
+    margin-bottom: 2mm;
+}
+
+.signature-name {
+    font-size: 10pt;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0;
+}
+
+/* Footer */
+.pdf-footer {
+    position: absolute;
+    bottom: 15mm;
+    left: 15mm;
+    right: 15mm;
+    text-align: center;
+    padding-top: 3mm;
+    border-top: 0.5px solid #E5E7EB;
+}
+
+.footer-text {
+    font-size: 8pt;
+    color: #9CA3AF;
+    margin: 0;
+}
+
+/* Print-specific overrides */
+@media print {
+    .invoice-pdf {
+        margin: 0;
+        padding: 15mm;
+        box-shadow: none;
+    }
+
+    .bg-shape {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .items-table .item-row {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .totals-section,
+    .signature-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+}
+
+/* PDF preview styling */
+@media screen {
+    .invoice-pdf {
+        margin: 10mm auto;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* Ensure table doesn't break */
+table {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* Anti-page-break for important sections */
+.pdf-header,
+.totals-section,
+.signature-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* High resolution support */
+@media print and (resolution >= 300dpi) {
+    .invoice-pdf {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

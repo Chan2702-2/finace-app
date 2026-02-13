@@ -72,6 +72,9 @@ const Invoice = (function() {
             document.getElementById('client-tax').value = '';
             document.getElementById('client-email').value = '';
             document.getElementById('client-address').value = '';
+            document.getElementById('invoice-tax').value = 0;
+            document.getElementById('invoice-discount').value = 0;
+            calculateInvoiceTotal();
             return;
         }
         
@@ -82,6 +85,33 @@ const Invoice = (function() {
             document.getElementById('client-email').value = client.email || '';
             document.getElementById('client-address').value = client.address || '';
         }
+    }
+    
+    /**
+     * Calculate invoice total
+     */
+    function calculateInvoiceTotal() {
+        const items = getInvoiceItems();
+        const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+        const tax = parseFloat(document.getElementById('invoice-tax')?.value) || 0;
+        const discount = parseFloat(document.getElementById('invoice-discount')?.value) || 0;
+        const total = subtotal + tax - discount;
+        
+        document.getElementById('invoice-subtotal').textContent = App.formatCurrency(subtotal);
+        document.getElementById('invoice-subtotal-hidden').value = subtotal;
+        document.getElementById('invoice-total').textContent = App.formatCurrency(total);
+        document.getElementById('invoice-total-hidden').value = total;
+        
+        // Update item totals
+        document.querySelectorAll('.invoice-item').forEach((itemEl, index) => {
+            const quantity = parseFloat(itemEl.querySelector('.item-quantity')?.value) || 0;
+            const unitPrice = parseFloat(itemEl.querySelector('.item-price')?.value) || 0;
+            const total = quantity * unitPrice;
+            const totalEl = itemEl.querySelector('.item-total');
+            if (totalEl) {
+                totalEl.value = App.formatCurrency(total);
+            }
+        });
     }
     
     /**
@@ -136,10 +166,20 @@ const Invoice = (function() {
             addItemBtn.addEventListener('click', addInvoiceItem);
         }
         
+        // Client select change
+        const clientSelect = document.getElementById('client-select');
+        if (clientSelect) {
+            clientSelect.addEventListener('change', (e) => {
+                selectClient(e.target.value);
+            });
+        }
+        
         // Calculate total on item change
         document.addEventListener('input', (e) => {
             if (e.target.classList.contains('item-quantity') || 
-                e.target.classList.contains('item-price')) {
+                e.target.classList.contains('item-price') ||
+                e.target.id === 'invoice-tax' ||
+                e.target.id === 'invoice-discount') {
                 calculateInvoiceTotal();
             }
         });
@@ -213,6 +253,11 @@ const Invoice = (function() {
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="InvoicePDF.download(invoices.find(i => i.id === '${invoice.id}'))" title="Download PDF">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </button>
                         ${invoice.status !== 'paid' ? `
@@ -305,6 +350,11 @@ const Invoice = (function() {
         // Set default values
         document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('invoice-due-date').value = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        document.getElementById('invoice-status').value = 'pending';
+        document.getElementById('invoice-tax').value = 0;
+        document.getElementById('invoice-discount').value = 0;
+        document.getElementById('invoice-notes').value = '';
+        document.getElementById('client-select').value = '';
         
         // If editing, populate form
         if (invoice) {
@@ -315,6 +365,9 @@ const Invoice = (function() {
             document.getElementById('invoice-date').value = invoice.created_at?.split('T')[0];
             document.getElementById('invoice-due-date').value = invoice.due_date || '';
             document.getElementById('invoice-notes').value = invoice.notes || '';
+            document.getElementById('invoice-status').value = invoice.status || 'pending';
+            document.getElementById('invoice-tax').value = invoice.tax || 0;
+            document.getElementById('invoice-discount').value = invoice.discount || 0;
             
             // Populate items
             const items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : (invoice.items || []);
@@ -466,7 +519,7 @@ const Invoice = (function() {
             discount: parseFloat(document.getElementById('invoice-discount')?.value) || 0,
             due_date: document.getElementById('invoice-due-date').value,
             notes: document.getElementById('invoice-notes').value,
-            status: editingInvoiceId ? undefined : 'pending'
+            status: document.getElementById('invoice-status')?.value || 'pending'
         };
         
         App.showLoading('Menyimpan invoice...');
@@ -598,14 +651,31 @@ const Invoice = (function() {
                     </div>
                 ` : ''}
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="document.getElementById('view-invoice-modal').classList.remove('active')">Tutup</button>
-                <button class="btn btn-primary" onclick="window.print()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                    </svg>
-                    Cetak
-                </button>
+            <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="InvoicePDF.preview(invoice)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Preview
+                    </button>
+                    <button class="btn btn-outline" onclick="InvoicePDF.download(invoice)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Download PDF
+                    </button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('view-invoice-modal').classList.remove('active')">Tutup</button>
+                    <button class="btn btn-primary" onclick="InvoicePDF.print(invoice)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        Cetak
+                    </button>
+                </div>
             </div>
         `;
         
@@ -793,6 +863,7 @@ const Invoice = (function() {
         addInvoiceItem,
         removeInvoiceItem,
         goToPage,
-        selectClient
+        selectClient,
+        calculateInvoiceTotal
     };
 })();

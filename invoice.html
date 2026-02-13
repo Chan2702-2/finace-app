@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/pdf-print.css">
 </head>
 <body>
     <div class="app-container">
@@ -287,11 +288,11 @@
                             <div class="form-row" style="margin-bottom: 8px;">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label">Pajak</label>
-                                    <input type="number" class="form-input" id="invoice-tax" value="0" min="0" onchange="calculateInvoiceTotal()">
+                                    <input type="number" class="form-input" id="invoice-tax" value="0" min="0" onchange="Invoice.calculateInvoiceTotal()">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label class="form-label">Diskon</label>
-                                    <input type="number" class="form-input" id="invoice-discount" value="0" min="0" onchange="calculateInvoiceTotal()">
+                                    <input type="number" class="form-input" id="invoice-discount" value="0" min="0" onchange="Invoice.calculateInvoiceTotal()">
                                 </div>
                             </div>
                             <input type="hidden" id="invoice-subtotal-hidden" value="0">
@@ -307,6 +308,14 @@
                         <div class="form-group">
                             <label class="form-label">Tanggal Jatuh Tempo</label>
                             <input type="date" class="form-input" id="invoice-due-date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-input" id="invoice-status">
+                                <option value="pending">Tertunda</option>
+                                <option value="sent">Terkirim</option>
+                                <option value="paid">Lunas</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -333,11 +342,17 @@
     </script>
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Config -->
     <script src="config/supabase.js"></script>
     <!-- App -->
     <script src="assets/js/app.js"></script>
     <!-- Invoice -->
     <script src="assets/js/invoice.js"></script>
+    <!-- Invoice PDF -->
+    <script src="assets/js/invoice-pdf.js"></script>
 </body>
 </html>
