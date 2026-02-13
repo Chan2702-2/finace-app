@@ -3,9 +3,12 @@
  * Handles invoice CRUD operations and management
  */
 
+// Global reference for invoices (for inline onclick handlers)
+window.invoices = window.invoices || [];
+
 const Invoice = (function() {
     // State
-    let invoices = [];
+    let invoices = window.invoices;
     let clients = [];
     let currentPage = 1;
     let itemsPerPage = 10;
@@ -211,6 +214,8 @@ const Invoice = (function() {
             if (error) throw error;
             
             invoices = data || [];
+            // Also update global reference for inline onclick handlers
+            window.invoices = invoices;
             renderInvoices();
             
         } catch (error) {
@@ -299,7 +304,10 @@ const Invoice = (function() {
         const searchTerm = elements.searchInput?.value?.toLowerCase() || '';
         const statusFilter = elements.statusFilter?.value || 'all';
         
-        return invoices.filter(invoice => {
+        // Use local invoices or fallback to window.invoices
+        const invoiceList = invoices || window.invoices || [];
+        
+        return invoiceList.filter(invoice => {
             const matchesSearch = invoice.invoice_number?.toLowerCase().includes(searchTerm) ||
                 invoice.client_name?.toLowerCase().includes(searchTerm);
             const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
@@ -582,7 +590,8 @@ const Invoice = (function() {
      * View invoice details
      */
     async function viewInvoice(id) {
-        const invoice = invoices.find(i => i.id === id);
+        const invoiceList = invoices || window.invoices || [];
+        const invoice = invoiceList.find(i => i.id === id);
         if (!invoice) return;
         
         // Store current invoice for PDF export
@@ -727,7 +736,8 @@ const Invoice = (function() {
      * Edit invoice
      */
     function editInvoice(id) {
-        const invoice = invoices.find(i => i.id === id);
+        const invoiceList = invoices || window.invoices || [];
+        const invoice = invoiceList.find(i => i.id === id);
         if (!invoice) return;
         openInvoiceModal(invoice);
     }
@@ -743,7 +753,8 @@ const Invoice = (function() {
         
         try {
             // Get invoice details first
-            const invoice = invoices.find(i => i.id === id);
+            const invoiceList = invoices || window.invoices || [];
+            const invoice = invoiceList.find(i => i.id === id);
             if (!invoice) return;
             
             // Update invoice status
@@ -875,7 +886,13 @@ const Invoice = (function() {
      * Get invoice by ID
      */
     function getInvoiceById(id) {
-        return invoices.find(i => i.id === id);
+        // Use local invoices or fallback to window.invoices
+        const invoiceList = invoices || window.invoices || [];
+        if (!Array.isArray(invoiceList)) {
+            console.warn('Invoices array not available');
+            return null;
+        }
+        return invoiceList.find(i => i && i.id === id);
     }
     
     /**
