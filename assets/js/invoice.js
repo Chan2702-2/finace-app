@@ -66,24 +66,30 @@ const Invoice = (function() {
      * Select client and auto-fill form
      */
     function selectClient(clientId) {
+        // Helper function to safely set element value
+        const setValue = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.value = value || '';
+        };
+        
         if (!clientId) {
             // Clear client fields if "-- Pilih Mitra --" is selected
-            document.getElementById('client-name').value = '';
-            document.getElementById('client-tax').value = '';
-            document.getElementById('client-email').value = '';
-            document.getElementById('client-address').value = '';
-            document.getElementById('invoice-tax').value = 0;
-            document.getElementById('invoice-discount').value = 0;
+            setValue('client-name', '');
+            setValue('client-tax', '');
+            setValue('client-email', '');
+            setValue('client-address', '');
+            setValue('invoice-tax', 0);
+            setValue('invoice-discount', 0);
             calculateInvoiceTotal();
             return;
         }
         
         const client = clients.find(c => c.id === clientId);
         if (client) {
-            document.getElementById('client-name').value = client.name || '';
-            document.getElementById('client-tax').value = client.npwp || '';
-            document.getElementById('client-email').value = client.email || '';
-            document.getElementById('client-address').value = client.address || '';
+            setValue('client-name', client.name);
+            setValue('client-tax', client.npwp);
+            setValue('client-email', client.email);
+            setValue('client-address', client.address);
         }
     }
     
@@ -347,39 +353,45 @@ const Invoice = (function() {
         document.getElementById('invoice-modal-title').textContent = invoice ? 'Edit Invoice' : 'Tambah Invoice';
         elements.invoiceForm.reset();
         
+        // Helper function to safely set element value
+        function setElValue(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.value = value || '';
+        }
+        
         // Set default values
-        document.getElementById('invoice-date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('invoice-due-date').value = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        document.getElementById('invoice-status').value = 'pending';
-        document.getElementById('invoice-tax').value = 0;
-        document.getElementById('invoice-discount').value = 0;
-        document.getElementById('invoice-notes').value = '';
-        document.getElementById('client-select').value = '';
+        setElValue('invoice-date', new Date().toISOString().split('T')[0]);
+        setElValue('invoice-due-date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+        setElValue('invoice-status', 'pending');
+        setElValue('invoice-tax', 0);
+        setElValue('invoice-discount', 0);
+        setElValue('invoice-notes', '');
+        setElValue('client-select', '');
         
         // If editing, populate form
         if (invoice) {
-            document.getElementById('invoice-number').value = invoice.invoice_number;
-            document.getElementById('client-name').value = invoice.client_name;
-            document.getElementById('client-email').value = invoice.client_email || '';
-            document.getElementById('client-address').value = invoice.client_address || '';
-            document.getElementById('invoice-date').value = invoice.created_at?.split('T')[0];
-            document.getElementById('invoice-due-date').value = invoice.due_date || '';
-            document.getElementById('invoice-notes').value = invoice.notes || '';
-            document.getElementById('invoice-status').value = invoice.status || 'pending';
-            document.getElementById('invoice-tax').value = invoice.tax || 0;
-            document.getElementById('invoice-discount').value = invoice.discount || 0;
+            setElValue('invoice-number', invoice.invoice_number);
+            setElValue('client-name', invoice.client_name);
+            setElValue('client-email', invoice.client_email);
+            setElValue('client-address', invoice.client_address);
+            setElValue('invoice-date', invoice.created_at?.split('T')[0]);
+            setElValue('invoice-due-date', invoice.due_date);
+            setElValue('invoice-notes', invoice.notes);
+            setElValue('invoice-status', invoice.status);
+            setElValue('invoice-tax', invoice.tax);
+            setElValue('invoice-discount', invoice.discount);
             
             // Populate items
             const items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : (invoice.items || []);
             renderInvoiceItems(items);
         } else {
             // Generate invoice number
-            document.getElementById('invoice-number').value = 'INV-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + String(Date.now()).slice(-4);
+            setElValue('invoice-number', 'INV-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + String(Date.now()).slice(-4));
             renderInvoiceItems([]);
         }
         
         // Show modal
-        elements.invoiceModal.classList.add('active');
+        elements.invoiceModal?.classList.add('active');
     }
     
     /**
@@ -480,12 +492,14 @@ const Invoice = (function() {
         const total = subtotal + tax - discount;
         
         // Update display
-        document.getElementById('invoice-subtotal').textContent = App.formatCurrency(subtotal);
-        document.getElementById('invoice-total').textContent = App.formatCurrency(total);
+        const subtotalEl = document.getElementById('invoice-subtotal');
+        const totalEl = document.getElementById('invoice-total');
+        if (subtotalEl) subtotalEl.textContent = App.formatCurrency(subtotal);
+        if (totalEl) totalEl.textContent = App.formatCurrency(total);
         
         // Update hidden fields
-        document.getElementById('invoice-subtotal-hidden').value = subtotal;
-        document.getElementById('invoice-total-hidden').value = total;
+        document.getElementById('invoice-subtotal-hidden')?.setAttribute('value', subtotal);
+        document.getElementById('invoice-total-hidden')?.setAttribute('value', total);
     }
     
     /**
@@ -504,21 +518,21 @@ const Invoice = (function() {
         }
         
         const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-        const total = parseFloat(document.getElementById('invoice-total-hidden').value) || subtotal;
+        const total = parseFloat(document.getElementById('invoice-total-hidden')?.value) || subtotal;
         
         const invoiceData = {
             user_id: user.id,
-            invoice_number: document.getElementById('invoice-number').value,
-            client_name: document.getElementById('client-name').value,
-            client_email: document.getElementById('client-email').value,
-            client_address: document.getElementById('client-address').value,
+            invoice_number: document.getElementById('invoice-number')?.value || '',
+            client_name: document.getElementById('client-name')?.value || '',
+            client_email: document.getElementById('client-email')?.value || '',
+            client_address: document.getElementById('client-address')?.value || '',
             items: JSON.stringify(items),
             subtotal: subtotal,
             total: total,
             tax: parseFloat(document.getElementById('invoice-tax')?.value) || 0,
             discount: parseFloat(document.getElementById('invoice-discount')?.value) || 0,
-            due_date: document.getElementById('invoice-due-date').value,
-            notes: document.getElementById('invoice-notes').value,
+            due_date: document.getElementById('invoice-due-date')?.value || '',
+            notes: document.getElementById('invoice-notes')?.value || '',
             status: document.getElementById('invoice-status')?.value || 'pending'
         };
         
