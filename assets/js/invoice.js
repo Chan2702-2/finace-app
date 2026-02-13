@@ -660,7 +660,31 @@ const Invoice = (function() {
                 App.showToast('success', 'Berhasil', 'Invoice berhasil dibuat');
             }
             
-            if (result.error) throw result.error;
+            if (result.error) {
+                // Check for schema cache error and try to refresh
+                if (result.error.code === 'PGRST204') {
+                    console.warn('Schema cache error detected, attempting to refresh...');
+                    await window.supabaseConfig.userHelpers.refreshSchemaCache();
+                    
+                    // Retry the operation
+                    if (editingInvoiceId) {
+                        result = await window.supabaseConfig.db
+                            .from('invoices')
+                            .update(invoiceData)
+                            .eq('id', editingInvoiceId);
+                    } else {
+                        result = await window.supabaseConfig.db
+                            .from('invoices')
+                            .insert(invoiceData);
+                    }
+                    
+                    if (result.error) {
+                        throw result.error;
+                    }
+                } else {
+                    throw result.error;
+                }
+            }
             
             closeInvoiceModal();
             loadInvoices();

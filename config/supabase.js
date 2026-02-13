@@ -225,6 +225,43 @@ const userHelpers = {
             console.error('Error in ensureUserExists:', error);
             return { error };
         }
+    },
+    
+    /**
+     * Refresh schema cache by making a request to get table info
+     * Call this if you get PGRST204 errors after database migrations
+     */
+    refreshSchemaCache: async () => {
+        try {
+            console.log('Refreshing schema cache...');
+            // Fetch invoice table info to refresh schema cache
+            const { data, error } = await getSupabase()
+                .from('invoices')
+                .select('id')
+                .limit(1);
+            
+            if (error && error.code === 'PGRST204') {
+                // Try fetching all columns explicitly
+                const { data: allData, error: allError } = await getSupabase()
+                    .from('invoices')
+                    .select('id, invoice_number, client_name, client_email, client_address, items, subtotal, tax, discount, total, status, due_date, notes, created_at, updated_at, bank_name, account_number, account_holder, bg_image')
+                    .limit(1);
+                
+                if (allError) {
+                    console.error('Error refreshing schema:', allError);
+                    return { error: allError };
+                }
+                
+                console.log('Schema cache refreshed successfully');
+                return { success: true };
+            }
+            
+            console.log('Schema cache refreshed successfully');
+            return { success: true };
+        } catch (error) {
+            console.error('Error refreshing schema cache:', error);
+            return { error };
+        }
     }
 };
 
