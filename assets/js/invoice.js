@@ -23,6 +23,7 @@ const Invoice = (function() {
         cacheElements();
         setupEventListeners();
         await loadClients();
+        await loadBanks();
         loadInvoices();
     }
     
@@ -51,6 +52,31 @@ const Invoice = (function() {
     }
     
     /**
+     * Load banks for dropdown
+     */
+    async function loadBanks() {
+        const user = App.getUser();
+        if (!user) return;
+        
+        try {
+            const { data, error } = await window.supabaseConfig.db
+                .from('banks')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('status', 'active')
+                .order('bank_name', { ascending: true });
+            
+            if (error) throw error;
+            
+            window.banks = data || [];
+            populateBankDropdown();
+            
+        } catch (error) {
+            console.error('Error loading banks:', error);
+        }
+    }
+    
+    /**
      * Populate client dropdown
      */
     function populateClientDropdown() {
@@ -64,6 +90,50 @@ const Invoice = (function() {
             option.textContent = client.name;
             clientSelect.appendChild(option);
         });
+    }
+    
+    /**
+     * Populate bank dropdown
+     */
+    function populateBankDropdown() {
+        const bankSelect = document.getElementById('invoice-bank');
+        if (!bankSelect) return;
+        
+        const currentValue = bankSelect.value;
+        
+        if (window.banks && window.banks.length > 0) {
+            bankSelect.innerHTML = '<option value="">-- Pilih Bank --</option>';
+            window.banks.forEach(bank => {
+                const option = document.createElement('option');
+                option.value = bank.bank_name;
+                option.textContent = `${bank.bank_name} - ${bank.account_number} (${bank.account_holder})`;
+                option.dataset.accountNumber = bank.account_number;
+                option.dataset.accountHolder = bank.account_holder;
+                bankSelect.appendChild(option);
+            });
+        }
+        
+        // Restore value if editing
+        if (currentValue) {
+            bankSelect.value = currentValue;
+        }
+    }
+    
+    /**
+     * Select bank and auto-fill account info
+     */
+    function selectBank(bankName) {
+        if (!bankName) {
+            document.getElementById('invoice-account-number').value = '';
+            document.getElementById('invoice-account-holder').value = '';
+            return;
+        }
+        
+        const bank = window.banks?.find(b => b.bank_name === bankName);
+        if (bank) {
+            document.getElementById('invoice-account-number').value = bank.account_number || '';
+            document.getElementById('invoice-account-holder').value = bank.account_holder || '';
+        }
     }
     
     /**
@@ -267,9 +337,20 @@ const Invoice = (function() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                         </button>
+                        <button class="btn btn-sm btn-primary" onclick="InvoicePDF.preview(Invoice.getInvoiceById('${invoice.id}'))" title="Preview PDF">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </button>
                         <button class="btn btn-sm btn-secondary" onclick="InvoicePDF.download(Invoice.getInvoiceById('${invoice.id}'))" title="Download PDF">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="InvoicePDF.print(Invoice.getInvoiceById('${invoice.id}'))" title="Print PDF" style="background: #17a2bb; color: white; border-color: #17a2bb;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                             </svg>
                         </button>
                         ${invoice.status !== 'paid' ? `
@@ -542,7 +623,13 @@ const Invoice = (function() {
             discount: parseFloat(document.getElementById('invoice-discount')?.value) || 0,
             due_date: document.getElementById('invoice-due-date')?.value || '',
             notes: document.getElementById('invoice-notes')?.value || '',
-            status: document.getElementById('invoice-status')?.value || 'pending'
+            status: document.getElementById('invoice-status')?.value || 'pending',
+            // Bank fields
+            bank_name: document.getElementById('invoice-bank')?.value || '',
+            account_number: document.getElementById('invoice-account-number')?.value || '',
+            account_holder: document.getElementById('invoice-account-holder')?.value || '',
+            // Background image
+            bg_image: window.invoiceBgImage || ''
         };
         
         App.showLoading('Menyimpan invoice...');
@@ -902,6 +989,21 @@ const Invoice = (function() {
         return currentInvoice;
     }
     
+    /**
+     * Preview background image
+     */
+    function previewBgImage(input) {
+        const preview = document.getElementById('bg-preview');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.style.backgroundImage = `url(${e.target.result})`;
+                window.invoiceBgImage = e.target.result; // Store base64 image
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
     // Public API
     return {
         init,
@@ -913,8 +1015,10 @@ const Invoice = (function() {
         removeInvoiceItem,
         goToPage,
         selectClient,
+        selectBank,
         calculateInvoiceTotal,
         getInvoiceById,
-        getCurrentInvoice
+        getCurrentInvoice,
+        previewBgImage
     };
 })();

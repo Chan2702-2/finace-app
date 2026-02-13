@@ -10,7 +10,7 @@ const InvoicePDF = (function() {
         filename: 'invoice',
         format: 'a4',
         orientation: 'portrait',
-        margin: [10, 10, 10, 15], // mm: [top, right, bottom, left]
+        margin: 15, // mm
         html2canvas: {
             scale: 3,
             useCORS: true,
@@ -24,163 +24,13 @@ const InvoicePDF = (function() {
         }
     };
 
-    /**
-     * Generate PDF from invoice data
-     * @param {Object} invoice - Invoice data object
-     * @returns {string} - HTML string for PDF
-     */
-    function generatePDFHTML(invoice) {
-        const items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : (invoice.items || []);
-        const statusColors = {
-            pending: '#F59E0B',
-            sent: '#3B82F6',
-            paid: '#10B981'
-        };
-        const statusTexts = {
-            pending: 'Tertunda',
-            sent: 'Terkirim',
-            paid: 'Lunas'
-        };
-
-        // Generate items rows
-        const itemsRows = items.map((item, index) => `
-            <tr class="item-row">
-                <td class="text-center">${index + 1}</td>
-                <td>${item.description || ''}</td>
-                <td class="text-center">${item.quantity || 0}</td>
-                <td class="text-right">${formatCurrency(item.unit_price || 0)}</td>
-                <td class="text-right">${formatCurrency(item.total || 0)}</td>
-            </tr>
-        `).join('');
-
-        // Calculate totals
-        const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-        const tax = invoice.tax || 0;
-        const discount = invoice.discount || 0;
-        const total = subtotal + tax - discount;
-
-        // Generate "Say" box (Terbilang)
-        const sayText = numberToWords(Math.round(total)) + ' Rupiah';
-
-        return `
-        <div id="invoicePDF" class="invoice-pdf">
-            <div class="pdf-header">
-                <div class="company-info">
-                    <img src="assets/img/logo.png" alt="Logo" class="company-logo">
-                    <div class="company-details">
-                        <h2 class="company-name">Finance System</h2>
-                        <p class="company-tagline">Sistem Manajemen Keuangan</p>
-                    </div>
-                </div>
-                <div class="invoice-title-block">
-                    <h1 class="invoice-title">INVOICE</h1>
-                    <div class="invoice-number">${invoice.invoice_number || ''}</div>
-                </div>
-            </div>
-
-            <div class="invoice-meta">
-                <div class="meta-left">
-                    <div class="meta-section">
-                        <h4 class="meta-label">Kepada:</h4>
-                        <p class="meta-value strong">${invoice.client_name || ''}</p>
-                        ${invoice.client_tax ? `<p class="meta-value">NPWP: ${invoice.client_tax}</p>` : ''}
-                        <p class="meta-value">${invoice.client_address?.replace(/\n/g, '<br>') || ''}</p>
-                        ${invoice.client_email ? `<p class="meta-value">${invoice.client_email}</p>` : ''}
-                    </div>
-                </div>
-                <div class="meta-right">
-                    <div class="meta-section text-right">
-                        <div class="meta-row">
-                            <span class="meta-label">Tanggal:</span>
-                            <span class="meta-value">${formatDate(invoice.created_at)}</span>
-                        </div>
-                        <div class="meta-row">
-                            <span class="meta-label">Jatuh Tempo:</span>
-                            <span class="meta-value">${invoice.due_date ? formatDate(invoice.due_date) : '-'}</span>
-                        </div>
-                        <div class="meta-row">
-                            <span class="meta-label">Status:</span>
-                            <span class="meta-value">
-                                <span class="status-badge" style="background: ${statusColors[invoice.status] || '#6B7280'}">${statusTexts[invoice.status] || 'Tertunda'}</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th class="text-center" style="width: 40px;">No</th>
-                        <th>Deskripsi</th>
-                        <th class="text-center" style="width: 60px;">Qty</th>
-                        <th class="text-right" style="width: 80px;">Harga</th>
-                        <th class="text-right" style="width: 90px;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${itemsRows}
-                </tbody>
-            </table>
-
-            <div class="totals-section">
-                <div class="totals-left">
-                    <div class="say-box">
-                        <h4 class="say-label">Terbilang:</h4>
-                        <p class="say-text">${sayText}</p>
-                    </div>
-                    <div class="bank-box">
-                        <h4 class="bank-label">Informasi Bank:</h4>
-                        <p class="bank-text">Bank: BCA<br>No. Rek: 1234567890<br>a.n: Finance System</p>
-                    </div>
-                </div>
-                <div class="totals-right">
-                    <div class="total-row">
-                        <span class="total-label">Subtotal:</span>
-                        <span class="total-value">${formatCurrency(subtotal)}</span>
-                    </div>
-                    ${tax > 0 ? `
-                    <div class="total-row">
-                        <span class="total-label">Pajak:</span>
-                        <span class="total-value">${formatCurrency(tax)}</span>
-                    </div>
-                    ` : ''}
-                    ${discount > 0 ? `
-                    <div class="total-row">
-                        <span class="total-label">Diskon:</span>
-                        <span class="total-value">-${formatCurrency(discount)}</span>
-                    </div>
-                    ` : ''}
-                    <div class="total-row grand-total">
-                        <span class="total-label">TOTAL:</span>
-                        <span class="total-value">${formatCurrency(total)}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="signature-section">
-                <div class="signature-box">
-                    <p class="signature-label">Hormat kami,</p>
-                    <div class="signature-space"></div>
-                    <p class="signature-name">Finance System</p>
-                </div>
-                <div class="signature-box text-right">
-                    <p class="signature-label">Penerima,</p>
-                    <div class="signature-space"></div>
-                    <p class="signature-name">${invoice.client_name || ''}</p>
-                </div>
-            </div>
-
-            <div class="pdf-footer">
-                <p class="footer-text">finance@system.com | www.financesystem.com</p>
-            </div>
-
-            <!-- Decorative background shapes -->
-            <div class="bg-shape bg-shape-1"></div>
-            <div class="bg-shape bg-shape-2"></div>
-        </div>
-        `;
-    }
+    // Colors
+    const colors = {
+        primary: '#2F80ED',
+        text: '#333',
+        border: '#4A90E2',
+        secondary: '#777'
+    };
 
     /**
      * Format currency
@@ -251,7 +101,150 @@ const InvoicePDF = (function() {
     }
 
     /**
-     * Preview PDF in new window
+     * Generate PDF HTML from invoice data
+     * @param {Object} invoice - Invoice data object
+     * @returns {string} - HTML string for PDF
+     */
+    function generatePDFHTML(invoice) {
+        const items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : (invoice.items || []);
+        
+        // Calculate totals
+        const subtotal = items.reduce((sum, item) => sum + ((item.quantity || 0) * (item.unit_price || 0)), 0);
+        const taxRate = invoice.tax || 11;
+        const tax = Math.round(subtotal * (taxRate / 100));
+        const total = subtotal + tax;
+
+        // Generate items rows
+        const itemsRows = items.map((item, index) => {
+            const isSubItem = item.is_subitem === true || item.is_subitem === 'true';
+            return `
+                <tr class="item-row ${isSubItem ? 'sub-item' : ''}">
+                    <td class="col-desc">${isSubItem ? '&nbsp;&nbsp;&nbsp;' : ''}${item.description || ''}</td>
+                    <td class="col-qty">${item.quantity || 0}</td>
+                    <td class="col-price">${formatCurrency(item.unit_price || 0)}</td>
+                    <td class="col-total">${formatCurrency((item.quantity || 0) * (item.unit_price || 0))}</td>
+                </tr>
+            `;
+        }).join('');
+
+        // Generate "Say" box (Terbilang)
+        const sayText = numberToWords(Math.round(total)) + ' Rupiah';
+
+        // Current date for invoice
+        const invoiceDate = invoice.created_at ? formatDate(invoice.created_at) : formatDate(new Date().toISOString());
+
+        return `
+        <div id="invoicePDF" class="invoice-pdf">
+            <!-- Decorative background shapes -->
+            <div class="bg-shape bg-shape-left"></div>
+            <div class="bg-shape bg-shape-right"></div>
+
+            <!-- Header Section -->
+            <div class="pdf-header">
+                <div class="header-top">
+                    <div class="company-info-left">
+                        <h1 class="company-name">Finance System</h1>
+                        <p class="company-address">Jl. Keuangan No. 123, Jakarta Selatan<br>DKI Jakarta 12345, Indonesia</p>
+                    </div>
+                    <div class="company-logo-right">
+                        <img src="assets/img/logo.png" alt="Logo">
+                    </div>
+                </div>
+                <hr class="header-divider">
+            </div>
+
+            <!-- Invoice Title Section -->
+            <div class="invoice-title-section">
+                <h2 class="invoice-main-title">INVOICE</h2>
+                <p class="invoice-date">${invoiceDate}</p>
+            </div>
+
+            <!-- Client Info Section -->
+            <div class="client-info-section">
+                <div class="client-info-left">
+                    <p class="client-label">Invoice To</p>
+                    <p class="client-name">${invoice.client_name || '-'}</p>
+                    <p class="client-address">${invoice.client_address || '-'}</p>
+                </div>
+                <div class="client-info-right">
+                    <div class="meta-row">
+                        <p class="client-label">Invoice Date</p>
+                        <p class="meta-value">${invoiceDate}</p>
+                    </div>
+                    <div class="meta-row">
+                        <p class="client-label">Invoice Number</p>
+                        <p class="meta-value">${invoice.invoice_number || '-'}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th class="col-desc">Description</th>
+                        <th class="col-qty">Qty</th>
+                        <th class="col-price">Unit Price</th>
+                        <th class="col-total">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsRows}
+                </tbody>
+            </table>
+
+            <!-- Totals Section -->
+            <div class="totals-section">
+                <div class="totals-right">
+                    <div class="total-row subtotal">
+                        <span class="total-label">Subtotal</span>
+                        <span class="total-value">${formatCurrency(subtotal)}</span>
+                    </div>
+                    <div class="total-row ppn">
+                        <span class="total-label">PPN ${taxRate}%</span>
+                        <span class="total-value">${formatCurrency(tax)}</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span class="total-label bold">Grand Total</span>
+                        <span class="total-value grand">${formatCurrency(total)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="bottom-section">
+                <div class="say-box-section">
+                    <div class="say-box">
+                        <p class="say-label">Terbilang</p>
+                        <p class="say-text">${sayText}</p>
+                    </div>
+                    <div class="bank-box">
+                        <p class="bank-info">
+                            <span class="bank-name">${invoice.bank_name || 'Bank BCA'}</span><br>
+                            Account Holder: ${invoice.account_holder || 'Finance System'}<br>
+                            Account Number: ${invoice.account_number || '1234567890'}
+                        </p>
+                    </div>
+                </div>
+                <div class="signature-box">
+                    <p class="signature-company">Finance System</p>
+                    <div class="signature-image"></div>
+                    <div class="signature-line"></div>
+                    <p class="signature-name">Arief Chan</p>
+                    <p class="signature-title">Director</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="pdf-footer">
+                <p class="footer-text">finance@system.com | www.financesystem.com</p>
+            </div>
+        </div>
+        `;
+    }
+
+    /**
+     * Preview PDF in modal
      */
     async function preview(invoice) {
         if (!invoice) {
@@ -259,27 +252,20 @@ const InvoicePDF = (function() {
             return;
         }
         
+        // Store current invoice for download/print buttons
+        window.currentPreviewInvoice = invoice;
+        
         const html = generatePDFHTML(invoice);
         
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Invoice Preview</title>
-                <link rel="stylesheet" href="assets/css/style.css">
-                <link rel="stylesheet" href="assets/css/pdf-print.css">
-            </head>
-            <body onload="window.print()">
-                ${html}
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
+        // Show in modal
+        const modal = document.getElementById('pdf-preview-modal');
+        const content = document.getElementById('pdf-preview-content');
+        content.innerHTML = html;
+        modal.classList.add('active');
     }
 
     /**
-     * Download PDF file
+     * Download PDF file using html2pdf.js
      */
     async function download(invoice) {
         if (!invoice) {
@@ -292,37 +278,35 @@ const InvoicePDF = (function() {
         // Create temporary container
         const container = document.createElement('div');
         container.innerHTML = html;
-        container.style.position = 'absolute';
+        container.style.position = 'fixed';
         container.style.left = '-9999px';
-        container.style.width = '210mm';
+        container.style.top = '0';
         document.body.appendChild(container);
 
         try {
             const element = container.querySelector('#invoicePDF');
             
-            // Generate PDF using html2pdf
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            await pdf.html(element, {
-                callback: function(doc) {
-                    const filename = `${config.filename}-${invoice.invoice_number || 'export'}.pdf`;
-                    doc.save(filename);
-                },
-                x: 0,
-                y: 0,
-                width: 210,
-                windowWidth: 794, // A4 width in pixels at 96 DPI
+            // Use html2pdf.js for high-quality PDF generation
+            const opt = {
+                margin: [15, 15, 15, 15], // mm
+                filename: `invoice-${invoice.invoice_number || 'export'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
-                    scale: 2,
+                    scale: 3,
                     useCORS: true,
-                    logging: false
-                }
-            });
+                    logging: false,
+                    letterRendering: true
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            await html2pdf().set(opt).from(element).save();
+            
         } catch (error) {
             console.error('Error generating PDF:', error);
             throw error;
@@ -332,7 +316,7 @@ const InvoicePDF = (function() {
     }
 
     /**
-     * Print PDF
+     * Print PDF using browser print
      */
     async function print(invoice) {
         if (!invoice) {
@@ -348,14 +332,15 @@ const InvoicePDF = (function() {
             <html>
             <head>
                 <title>Invoice Print</title>
-                <link rel="stylesheet" href="assets/css/style.css">
                 <link rel="stylesheet" href="assets/css/pdf-print.css">
             </head>
             <body>
                 ${html}
                 <script>
                     window.onload = function() {
-                        window.print();
+                        setTimeout(function() {
+                            window.print();
+                        }, 300);
                     };
                 <\/script>
             </body>

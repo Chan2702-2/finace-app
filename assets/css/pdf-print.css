@@ -1,7 +1,7 @@
 /**
- * PDF Print Styles
- * A4 Portrait Layout - Ready for Print/PDF Export
- * All measurements in mm for precision
+ * PDF Print Styles - Invoice Export
+ * A4 Portrait Layout - Precision mm measurements
+ * Colors: Primary #2F80ED, Text #333, Border #4A90E2, Secondary #777
  */
 
 /* Page setup */
@@ -18,342 +18,370 @@
     }
 }
 
-/* Base styles */
+/* Base invoice PDF container */
 .invoice-pdf {
     width: 210mm;
     min-height: 297mm;
     padding: 15mm;
     box-sizing: border-box;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 10pt;
-    line-height: 1.4;
-    color: #1F2937;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #333;
     position: relative;
     background: #fff;
     overflow: hidden;
 }
 
-/* Decorative background shapes */
+/* Decorative background shapes - blue bottom left & right */
 .bg-shape {
     position: absolute;
-    width: 300mm;
-    height: 300mm;
-    opacity: 0.05;
+    width: 200px;
+    height: 200px;
     pointer-events: none;
+    z-index: 0;
 }
 
-.bg-shape-1 {
-    top: -100mm;
-    right: -100mm;
-    background: radial-gradient(circle, #4F46E5 0%, transparent 70%);
+.bg-shape-left {
+    bottom: 0;
+    left: 0;
+    background: radial-gradient(circle at bottom left, rgba(47, 128, 237, 0.08) 0%, transparent 70%);
 }
 
-.bg-shape-2 {
-    bottom: -100mm;
-    left: -100mm;
-    background: radial-gradient(circle, #10B981 0%, transparent 70%);
+.bg-shape-right {
+    bottom: 0;
+    right: 0;
+    background: radial-gradient(circle at bottom right, rgba(47, 128, 237, 0.08) 0%, transparent 70%);
 }
 
-/* Header section */
+/* PDF Header section */
 .pdf-header {
+    position: relative;
+    margin-bottom: 8mm;
+}
+
+.header-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12mm;
-    padding-bottom: 8mm;
-    border-bottom: 2px solid #4F46E5;
-    position: relative;
 }
 
-.company-info {
-    display: flex;
-    align-items: flex-start;
-    gap: 6mm;
-}
-
-.company-logo {
-    width: 20mm;
-    height: 20mm;
-    object-fit: contain;
-}
-
-.company-details {
-    text-align: left;
+.company-info-left {
+    flex: 1;
 }
 
 .company-name {
-    font-size: 16pt;
+    font-size: 20px;
     font-weight: 700;
-    color: #4F46E5;
-    margin: 0;
+    color: #2F80ED;
+    margin: 0 0 3px 0;
     line-height: 1.2;
 }
 
-.company-tagline {
-    font-size: 8pt;
-    color: #6B7280;
-    margin: 1mm 0 0;
+.company-address {
+    font-size: 12px;
+    color: #777;
+    margin: 0;
+    line-height: 1.4;
 }
 
-.invoice-title-block {
+.header-divider {
+    height: 1px;
+    background: #4A90E2;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+.company-logo-right {
+    width: 140px;
     text-align: right;
 }
 
-.invoice-title {
-    font-size: 22pt;
+.company-logo-right img {
+    width: 140px;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Invoice title section */
+.invoice-title-section {
+    margin-top: 10mm;
+    text-align: right;
+}
+
+.invoice-main-title {
+    font-size: 28px;
     font-weight: 700;
-    color: #4F46E5;
+    color: #2F80ED;
     margin: 0;
     line-height: 1;
-    letter-spacing: 2px;
 }
 
-.invoice-number {
-    font-size: 11pt;
-    font-weight: 600;
-    color: #1F2937;
-    margin-top: 2mm;
+.invoice-date {
+    font-size: 14px;
+    color: #333;
+    margin: 4px 0 0 0;
 }
 
-/* Invoice meta section */
-.invoice-meta {
+/* Client info section */
+.client-info-section {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10mm;
+    margin-top: 10mm;
+    gap: 20px;
 }
 
-.meta-left {
-    width: 55%;
+.client-info-left {
+    flex: 1;
 }
 
-.meta-right {
-    width: 40%;
+.client-info-right {
     text-align: right;
+    min-width: 150px;
 }
 
-.meta-section {
-    margin-bottom: 6mm;
-}
-
-.meta-label {
-    font-size: 8pt;
-    color: #6B7280;
-    margin: 0 0 1mm;
+.client-label {
+    font-size: 11px;
+    color: #777;
+    margin: 0 0 4px 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.meta-value {
-    font-size: 9pt;
-    color: #1F2937;
-    margin: 0;
-    line-height: 1.5;
+.client-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 4px 0;
 }
 
-.meta-value.strong {
-    font-weight: 600;
-    font-size: 11pt;
+.client-address {
+    font-size: 12px;
+    color: #333;
+    margin: 0;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+.meta-value {
+    font-size: 13px;
+    color: #333;
+    margin: 0;
 }
 
 .meta-row {
-    display: flex;
-    justify-content: flex-end;
-    gap: 4mm;
-    margin-bottom: 2mm;
-}
-
-.meta-row .meta-label {
-    margin: 0;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 1mm 3mm;
-    border-radius: 2mm;
-    font-size: 8pt;
-    font-weight: 600;
-    color: #fff;
-    text-transform: uppercase;
+    margin-bottom: 4px;
 }
 
 /* Items table */
 .items-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 8mm;
+    margin-top: 10mm;
     page-break-inside: avoid;
 }
 
-.items-table thead tr {
-    background: #4F46E5;
-    color: #fff;
+.items-table thead {
+    background: #2F80ED;
 }
 
 .items-table th {
-    padding: 3mm 2mm;
-    font-size: 9pt;
-    font-weight: 600;
+    padding: 8px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border: none;
+    border-bottom: none;
 }
 
-.items-table td {
-    padding: 3mm 2mm;
-    border-bottom: 0.5px solid #E5E7EB;
-    font-size: 9pt;
-    vertical-align: top;
+.items-table th.col-desc {
+    width: 55%;
+    text-align: left;
 }
 
-.items-table tbody tr:hover {
-    background: #F9FAFB;
-}
-
-.items-table .item-row {
-    page-break-inside: avoid;
-    break-inside: avoid;
-}
-
-/* Text alignments */
-.text-center {
+.items-table th.col-qty {
+    width: 15%;
     text-align: center;
 }
 
-.text-right {
+.items-table th.col-price {
+    width: 15%;
     text-align: right;
+}
+
+.items-table th.col-total {
+    width: 15%;
+    text-align: right;
+}
+
+.items-table tbody td {
+    padding: 6px;
+    font-size: 13px;
+    border-bottom: 1px solid #4A90E2;
+}
+
+.items-table tbody td.col-desc {
+    text-align: left;
+}
+
+.items-table tbody td.col-qty {
+    text-align: center;
+}
+
+.items-table tbody td.col-price {
+    text-align: right;
+}
+
+.items-table tbody td.col-total {
+    text-align: right;
+}
+
+.items-table .sub-item {
+    padding-left: 20px;
 }
 
 /* Totals section */
 .totals-section {
+    margin-top: 8mm;
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 10mm;
-    page-break-inside: avoid;
-}
-
-.totals-left {
-    width: 45%;
+    justify-content: flex-end;
 }
 
 .totals-right {
-    width: 45%;
-}
-
-.say-box {
-    background: #F3F4F6;
-    border: 1px solid #E5E7EB;
-    border-radius: 2mm;
-    padding: 4mm;
-    margin-bottom: 4mm;
-}
-
-.say-label {
-    font-size: 8pt;
-    color: #6B7280;
-    margin: 0 0 2mm;
-    text-transform: uppercase;
-}
-
-.say-text {
-    font-size: 9pt;
-    font-style: italic;
-    color: #1F2937;
-    margin: 0;
-    line-height: 1.4;
-}
-
-.bank-box {
-    background: #ECFDF5;
-    border: 1px solid #10B981;
-    border-radius: 2mm;
-    padding: 4mm;
-}
-
-.bank-label {
-    font-size: 8pt;
-    color: #059669;
-    margin: 0 0 2mm;
-    text-transform: uppercase;
-}
-
-.bank-text {
-    font-size: 9pt;
-    color: #1F2937;
-    margin: 0;
-    line-height: 1.5;
+    width: 40%;
 }
 
 .total-row {
     display: flex;
     justify-content: space-between;
-    padding: 2mm 0;
-    border-bottom: 0.5px solid #E5E7EB;
+    padding: 4px 0;
+    font-size: 13px;
+}
+
+.total-row.subtotal {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 4px;
+}
+
+.total-row.ppn {
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 4px;
 }
 
 .total-row.grand-total {
-    background: #4F46E5;
-    color: #fff;
-    padding: 3mm 4mm;
-    margin-top: 2mm;
-    border-radius: 2mm;
-    border: none;
+    border-top: 2px solid #2F80ED;
+    padding-top: 8px;
+    margin-top: 4px;
 }
 
 .total-label {
-    font-size: 9pt;
-    color: #4B5563;
+    color: #333;
 }
 
-.grand-total .total-label {
-    font-size: 11pt;
+.total-label.bold {
     font-weight: 700;
-    color: #fff;
+    font-size: 14px;
 }
 
 .total-value {
-    font-size: 9pt;
     font-weight: 600;
-    color: #1F2937;
+    color: #333;
 }
 
-.grand-total .total-value {
-    font-size: 14pt;
+.total-value.grand {
     font-weight: 700;
-    color: #fff;
+    font-size: 16px;
 }
 
-/* Signature section */
-.signature-section {
+/* Bottom section - Say Box and Signature */
+.bottom-section {
+    margin-top: 15mm;
     display: flex;
     justify-content: space-between;
-    margin-top: 12mm;
     page-break-inside: avoid;
 }
 
+.say-box-section {
+    width: 60%;
+}
+
+.say-box {
+    border: 1px solid #2F80ED;
+    padding: 10px;
+}
+
+.say-label {
+    font-size: 11px;
+    color: #777;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+}
+
+.say-text {
+    font-size: 12px;
+    color: #333;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Bank box below say box */
+.bank-box {
+    margin-top: 8px;
+    padding-left: 0;
+}
+
+.bank-info {
+    font-size: 12px;
+    color: #333;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.bank-name {
+    font-weight: 600;
+}
+
+/* Signature box - fixed bottom right */
 .signature-box {
-    width: 40%;
+    width: 250px;
+    height: 160px;
+    border: 1px solid #2F80ED;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
 }
 
-.signature-box.text-right {
-    text-align: right;
+.signature-company {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
 }
 
-.signature-label {
-    font-size: 9pt;
-    color: #6B7280;
-    margin: 0 0 15mm;
+.signature-image {
+    width: 100px;
+    height: auto;
+    object-fit: contain;
 }
 
-.signature-space {
-    height: 20mm;
-    border-bottom: 1px solid #1F2937;
-    margin-bottom: 2mm;
+.signature-line {
+    height: 40px;
+    border-bottom: 1px solid #333;
 }
 
 .signature-name {
-    font-size: 10pt;
+    font-size: 12px;
+    color: #333;
+    margin: 4px 0 0 0;
     font-weight: 600;
-    color: #1F2937;
+}
+
+.signature-title {
+    font-size: 11px;
+    color: #777;
     margin: 0;
 }
 
@@ -363,15 +391,15 @@
     bottom: 15mm;
     left: 15mm;
     right: 15mm;
-    text-align: center;
-    padding-top: 3mm;
-    border-top: 0.5px solid #E5E7EB;
+    padding-top: 6px;
+    border-top: 0.5px solid #4A90E2;
 }
 
 .footer-text {
-    font-size: 8pt;
-    color: #9CA3AF;
+    font-size: 12px;
+    color: #2F80ED;
     margin: 0;
+    text-align: left;
 }
 
 /* Print-specific overrides */
@@ -392,8 +420,7 @@
         break-inside: avoid;
     }
 
-    .totals-section,
-    .signature-section {
+    .bottom-section {
         page-break-inside: avoid;
         break-inside: avoid;
     }
@@ -420,8 +447,7 @@ tr {
 
 /* Anti-page-break for important sections */
 .pdf-header,
-.totals-section,
-.signature-section {
+.bottom-section {
     page-break-inside: avoid;
     break-inside: avoid;
 }

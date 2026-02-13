@@ -68,6 +68,12 @@
                         </svg>
                         <span>Mitra</span>
                     </a>
+                    <a href="bank.html" class="nav-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                        <span>Bank</span>
+                    </a>
                 </div>
             </nav>
             
@@ -319,6 +325,35 @@
                         </div>
                     </div>
                     
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Bank</label>
+                            <select class="form-input" id="invoice-bank" onchange="Invoice.selectBank(this.value)">
+                                <option value="">-- Pilih Bank --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nomor Rekening</label>
+                            <input type="text" class="form-input" id="invoice-account-number" placeholder="No. Rekening">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nama Pemilik Rekening</label>
+                            <input type="text" class="form-input" id="invoice-account-holder" placeholder="A.n">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Background Image Invoice</label>
+                            <input type="file" class="form-input" id="invoice-bg-image" accept="image/*" onchange="Invoice.previewBgImage(this)">
+                            <small style="color: #777; font-size: 11px;">Ukuran disarankan: 210x297mm (A4)</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">&nbsp;</label>
+                            <div id="bg-preview" style="width: 100px; height: 60px; border: 1px solid #ddd; background-size: cover; background-position: center;"></div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
                         <textarea class="form-textarea" id="invoice-notes" rows="3" placeholder="Catatan untuk invoice..."></textarea>
@@ -334,6 +369,41 @@
     
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
+    
+    <!-- Hidden Invoice PDF Container (used for PDF generation) -->
+    <div id="invoicePDF" style="display: none;"></div>
+    
+    <!-- PDF Preview Modal -->
+    <div class="modal-overlay" id="pdf-preview-modal">
+        <div class="modal modal-xl" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Invoice Preview</h3>
+                <button class="modal-close" onclick="document.getElementById('pdf-preview-modal').classList.remove('active')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px; background: #f5f5f5;">
+                <div id="pdf-preview-content" style="background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 0 auto; max-width: 700px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="document.getElementById('pdf-preview-modal').classList.remove('active')">Tutup</button>
+                <button class="btn btn-primary" id="preview-download-btn" onclick="InvoicePDF.download(window.currentPreviewInvoice)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Download PDF
+                </button>
+                <button class="btn btn-info" id="preview-print-btn" onclick="InvoicePDF.print(window.currentPreviewInvoice)" style="background: #17a2bb; border-color: #17a2bb;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                    </svg>
+                    Print PDF
+                </button>
+            </div>
+        </div>
+    </div>
     
     <!-- Vercel Environment Variables Injection -->
     <script>

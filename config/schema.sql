@@ -96,6 +96,28 @@ CREATE TABLE notifications (
 );
 
 -- ============================================
+-- BANKS TABLE
+-- ============================================
+CREATE TABLE banks (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    bank_name TEXT NOT NULL,
+    account_number TEXT NOT NULL,
+    account_holder TEXT NOT NULL,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
+);
+
+-- ============================================
+-- INVOICES EXTENDED TABLE (for bank & bg fields)
+-- ============================================
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS bank_name TEXT;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS account_number TEXT;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS account_holder TEXT;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS bg_image TEXT;
+
+-- ============================================
 -- LOGS TABLE (Audit Trail)
 -- ============================================
 CREATE TABLE logs (
@@ -137,6 +159,7 @@ ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reconciliations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE banks ENABLE ROW LEVEL SECURITY;
 
 -- Users: Users can only see their own data
 CREATE POLICY "Users can view own data" ON users
@@ -195,6 +218,19 @@ CREATE POLICY "Users can update own notifications" ON notifications
 CREATE POLICY "Users can view own logs" ON logs
     FOR SELECT USING (auth.uid() = user_id OR auth.uid()::TEXT IN (SELECT id::TEXT FROM users WHERE role = 'admin'));
 
+-- Banks: Users can CRUD their own banks
+CREATE POLICY "Users can view own banks" ON banks
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own banks" ON banks
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own banks" ON banks
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own banks" ON banks
+    FOR DELETE USING (auth.uid() = user_id);
+
 -- ============================================
 -- FUNCTIONS
 -- ============================================
@@ -219,6 +255,9 @@ CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON transactions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_reconciliations_updated_at BEFORE UPDATE ON reconciliations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_banks_updated_at BEFORE UPDATE ON banks
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Function to generate invoice number
