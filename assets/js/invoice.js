@@ -10,6 +10,7 @@ const Invoice = (function() {
     let currentPage = 1;
     let itemsPerPage = 10;
     let editingInvoiceId = null;
+    let currentInvoice = null; // For PDF export
     
     /**
      * Initialize invoice module
@@ -261,7 +262,7 @@ const Invoice = (function() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                         </button>
-                        <button class="btn btn-sm btn-secondary" onclick="InvoicePDF.download(invoices.find(i => i.id === '${invoice.id}'))" title="Download PDF">
+                        <button class="btn btn-sm btn-secondary" onclick="InvoicePDF.download(Invoice.getInvoiceById('${invoice.id}'))" title="Download PDF">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
@@ -584,6 +585,9 @@ const Invoice = (function() {
         const invoice = invoices.find(i => i.id === id);
         if (!invoice) return;
         
+        // Store current invoice for PDF export
+        currentInvoice = invoice;
+        
         // Show invoice details modal or print view
         const items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : invoice.items;
         
@@ -667,14 +671,14 @@ const Invoice = (function() {
             </div>
             <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 10px;">
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="InvoicePDF.preview(invoice)">
+                    <button class="btn btn-secondary" onclick="InvoicePDF.preview(Invoice.getCurrentInvoice())">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                         Preview
                     </button>
-                    <button class="btn btn-outline" onclick="InvoicePDF.download(invoice)">
+                    <button class="btn btn-outline" onclick="InvoicePDF.download(Invoice.getCurrentInvoice())">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
@@ -683,7 +687,7 @@ const Invoice = (function() {
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-secondary" onclick="document.getElementById('view-invoice-modal').classList.remove('active')">Tutup</button>
-                    <button class="btn btn-primary" onclick="InvoicePDF.print(invoice)">
+                    <button class="btn btn-primary" onclick="InvoicePDF.print(Invoice.getCurrentInvoice())">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                         </svg>
@@ -867,6 +871,20 @@ const Invoice = (function() {
         };
     }
     
+    /**
+     * Get invoice by ID
+     */
+    function getInvoiceById(id) {
+        return invoices.find(i => i.id === id);
+    }
+    
+    /**
+     * Get current invoice (for PDF export)
+     */
+    function getCurrentInvoice() {
+        return currentInvoice;
+    }
+    
     // Public API
     return {
         init,
@@ -878,6 +896,8 @@ const Invoice = (function() {
         removeInvoiceItem,
         goToPage,
         selectClient,
-        calculateInvoiceTotal
+        calculateInvoiceTotal,
+        getInvoiceById,
+        getCurrentInvoice
     };
 })();

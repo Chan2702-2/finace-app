@@ -254,6 +254,11 @@ const InvoicePDF = (function() {
      * Preview PDF in new window
      */
     async function preview(invoice) {
+        if (!invoice) {
+            console.error('Invoice data is null or undefined');
+            return;
+        }
+        
         const html = generatePDFHTML(invoice);
         
         const printWindow = window.open('', '_blank');
@@ -277,6 +282,11 @@ const InvoicePDF = (function() {
      * Download PDF file
      */
     async function download(invoice) {
+        if (!invoice) {
+            console.error('Invoice data is null or undefined');
+            return;
+        }
+        
         const html = generatePDFHTML(invoice);
         
         // Create temporary container
@@ -325,6 +335,11 @@ const InvoicePDF = (function() {
      * Print PDF
      */
     async function print(invoice) {
+        if (!invoice) {
+            console.error('Invoice data is null or undefined');
+            return;
+        }
+        
         const html = generatePDFHTML(invoice);
         
         const printWindow = window.open('', '_blank');
